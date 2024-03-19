@@ -1,10 +1,10 @@
-# Sandbox
+# Blaster Master
 
-![status](https://github.com/laksby/sandbox/actions/workflows/gatsby.yml/badge.svg?branch=main)
+![status](https://github.com/laksby/blaster-master/actions/workflows/gatsby.yml/badge.svg?branch=main)
 
-This repository contains source code for sandbox template.
+This repository contains source code for Blaster Master game prototype.
 
-[Link to Preview](https://laksby.github.io/sandbox/)
+[Link to Preview](https://laksby.github.io/blaster-master/)
 
 ## Setup
 
@@ -12,9 +12,9 @@ Clone repository
 
 ```bash
 # ssh
-git clone git@github.com:laksby/sandbox.git
+git clone git@github.com:laksby/blaster-master.git
 # https
-git clone https://github.com/laksby/sandbox.git
+git clone https://github.com/laksby/blaster-master.git
 ```
 
 Install dependencies

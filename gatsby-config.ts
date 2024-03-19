@@ -5,7 +5,7 @@ const config: GatsbyConfig = {
   pathPrefix: paths.GATSBY_PATH_PREFIX,
   siteMetadata: {
     title: 'laksby',
-    siteUrl: 'https://laksby.github.io/sandbox/',
+    siteUrl: 'https://laksby.github.io/blaster-master/',
   },
   graphqlTypegen: true,
   plugins: [

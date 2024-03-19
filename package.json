@@ -1,7 +1,7 @@
 {
-  "name": "sandbox",
+  "name": "blaster-master",
   "version": "1.0.0",
-  "description": "Sandbox project template for various purposes",
+  "description": "Blaster Master game prototype",
   "private": true,
   "scripts": {
     "develop": "gatsby develop",
