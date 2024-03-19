@@ -1,0 +1,42 @@
+{
+  "name": "sandbox",
+  "version": "1.0.0",
+  "description": "Sandbox project template for various purposes",
+  "private": true,
+  "scripts": {
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build --prefix-paths",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "gatsby": "^5.12.4",
+    "gatsby-source-filesystem": "^5.12.0",
+    "gatsby-transformer-json": "^5.12.0",
+    "normalize.css": "^8.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-use": "^17.5.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.24.1",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.67",
+    "@types/react-dom": "^18.2.22",
+    "autoprefixer": "^10.4.17",
+    "babel-preset-gatsby": "^3.12.0",
+    "cssnano": "^6.1.0",
+    "gatsby-plugin-postcss": "^6.13.1",
+    "husky": "^9.0.11",
+    "postcss": "^8.4.37",
+    "postcss-import": "^16.0.1",
+    "postcss-preset-env": "^9.5.2",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2"
+  }
+}
