@@ -3,3 +3,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Super Squad';
+  src: url('../../static/fonts/super_squad/Super Squad.ttf') format('truetype');
+}

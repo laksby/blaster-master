@@ -360,15 +360,7 @@ type File = Node & {
   readonly blksize: Maybe<Scalars['Int']>;
   readonly blocks: Maybe<Scalars['Int']>;
   readonly changeTime: Scalars['Date'];
-  /** Returns the first child node of type WorkProjectJson or null if there are no children of given type on this node */
-  readonly childWorkProjectJson: Maybe<WorkProjectJson>;
-  /** Returns the first child node of type WorkTitleJson or null if there are no children of given type on this node */
-  readonly childWorkTitleJson: Maybe<WorkTitleJson>;
   readonly children: ReadonlyArray<Node>;
-  /** Returns all children nodes filtered by type WorkProjectJson */
-  readonly childrenWorkProjectJson: Maybe<ReadonlyArray<Maybe<WorkProjectJson>>>;
-  /** Returns all children nodes filtered by type WorkTitleJson */
-  readonly childrenWorkTitleJson: Maybe<ReadonlyArray<Maybe<WorkTitleJson>>>;
   readonly ctime: Scalars['Date'];
   readonly ctimeMs: Scalars['Float'];
   readonly dev: Scalars['Int'];
@@ -511,11 +503,7 @@ type FileFieldSelector = {
   readonly blksize: InputMaybe<FieldSelectorEnum>;
   readonly blocks: InputMaybe<FieldSelectorEnum>;
   readonly changeTime: InputMaybe<FieldSelectorEnum>;
-  readonly childWorkProjectJson: InputMaybe<WorkProjectJsonFieldSelector>;
-  readonly childWorkTitleJson: InputMaybe<WorkTitleJsonFieldSelector>;
   readonly children: InputMaybe<NodeFieldSelector>;
-  readonly childrenWorkProjectJson: InputMaybe<WorkProjectJsonFieldSelector>;
-  readonly childrenWorkTitleJson: InputMaybe<WorkTitleJsonFieldSelector>;
   readonly ctime: InputMaybe<FieldSelectorEnum>;
   readonly ctimeMs: InputMaybe<FieldSelectorEnum>;
   readonly dev: InputMaybe<FieldSelectorEnum>;
@@ -556,11 +544,7 @@ type FileFilterInput = {
   readonly blksize: InputMaybe<IntQueryOperatorInput>;
   readonly blocks: InputMaybe<IntQueryOperatorInput>;
   readonly changeTime: InputMaybe<DateQueryOperatorInput>;
-  readonly childWorkProjectJson: InputMaybe<WorkProjectJsonFilterInput>;
-  readonly childWorkTitleJson: InputMaybe<WorkTitleJsonFilterInput>;
   readonly children: InputMaybe<NodeFilterListInput>;
-  readonly childrenWorkProjectJson: InputMaybe<WorkProjectJsonFilterListInput>;
-  readonly childrenWorkTitleJson: InputMaybe<WorkTitleJsonFilterListInput>;
   readonly ctime: InputMaybe<DateQueryOperatorInput>;
   readonly ctimeMs: InputMaybe<FloatQueryOperatorInput>;
   readonly dev: InputMaybe<IntQueryOperatorInput>;
@@ -642,11 +626,7 @@ type FileSortInput = {
   readonly blksize: InputMaybe<SortOrderEnum>;
   readonly blocks: InputMaybe<SortOrderEnum>;
   readonly changeTime: InputMaybe<SortOrderEnum>;
-  readonly childWorkProjectJson: InputMaybe<WorkProjectJsonSortInput>;
-  readonly childWorkTitleJson: InputMaybe<WorkTitleJsonSortInput>;
   readonly children: InputMaybe<NodeSortInput>;
-  readonly childrenWorkProjectJson: InputMaybe<WorkProjectJsonSortInput>;
-  readonly childrenWorkTitleJson: InputMaybe<WorkTitleJsonSortInput>;
   readonly ctime: InputMaybe<SortOrderEnum>;
   readonly ctimeMs: InputMaybe<SortOrderEnum>;
   readonly dev: InputMaybe<SortOrderEnum>;
@@ -805,8 +785,6 @@ type Query = {
   readonly allSiteFunction: SiteFunctionConnection;
   readonly allSitePage: SitePageConnection;
   readonly allSitePlugin: SitePluginConnection;
-  readonly allWorkProjectJson: WorkProjectJsonConnection;
-  readonly allWorkTitleJson: WorkTitleJsonConnection;
   readonly directory: Maybe<Directory>;
   readonly file: Maybe<File>;
   readonly site: Maybe<Site>;
@@ -814,8 +792,6 @@ type Query = {
   readonly siteFunction: Maybe<SiteFunction>;
   readonly sitePage: Maybe<SitePage>;
   readonly sitePlugin: Maybe<SitePlugin>;
-  readonly workProjectJson: Maybe<WorkProjectJson>;
-  readonly workTitleJson: Maybe<WorkTitleJson>;
 };
 
 
@@ -875,22 +851,6 @@ type Query_allSitePluginArgs = {
 };
 
 
-type Query_allWorkProjectJsonArgs = {
-  filter: InputMaybe<WorkProjectJsonFilterInput>;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-  sort: InputMaybe<ReadonlyArray<InputMaybe<WorkProjectJsonSortInput>>>;
-};
-
-
-type Query_allWorkTitleJsonArgs = {
-  filter: InputMaybe<WorkTitleJsonFilterInput>;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-  sort: InputMaybe<ReadonlyArray<InputMaybe<WorkTitleJsonSortInput>>>;
-};
-
-
 type Query_directoryArgs = {
   absolutePath: InputMaybe<StringQueryOperatorInput>;
   accessTime: InputMaybe<DateQueryOperatorInput>;
@@ -942,11 +902,7 @@ type Query_fileArgs = {
   blksize: InputMaybe<IntQueryOperatorInput>;
   blocks: InputMaybe<IntQueryOperatorInput>;
   changeTime: InputMaybe<DateQueryOperatorInput>;
-  childWorkProjectJson: InputMaybe<WorkProjectJsonFilterInput>;
-  childWorkTitleJson: InputMaybe<WorkTitleJsonFilterInput>;
   children: InputMaybe<NodeFilterListInput>;
-  childrenWorkProjectJson: InputMaybe<WorkProjectJsonFilterListInput>;
-  childrenWorkTitleJson: InputMaybe<WorkTitleJsonFilterListInput>;
   ctime: InputMaybe<DateQueryOperatorInput>;
   ctimeMs: InputMaybe<FloatQueryOperatorInput>;
   dev: InputMaybe<IntQueryOperatorInput>;
@@ -1046,34 +1002,6 @@ type Query_sitePluginArgs = {
   resolve: InputMaybe<StringQueryOperatorInput>;
   ssrAPIs: InputMaybe<StringQueryOperatorInput>;
   version: InputMaybe<StringQueryOperatorInput>;
-};
-
-
-type Query_workProjectJsonArgs = {
-  activities: InputMaybe<StringQueryOperatorInput>;
-  children: InputMaybe<NodeFilterListInput>;
-  id: InputMaybe<StringQueryOperatorInput>;
-  index: InputMaybe<IntQueryOperatorInput>;
-  industry: InputMaybe<StringQueryOperatorInput>;
-  internal: InputMaybe<InternalFilterInput>;
-  parent: InputMaybe<NodeFilterInput>;
-  product: InputMaybe<StringQueryOperatorInput>;
-  project: InputMaybe<StringQueryOperatorInput>;
-  role: InputMaybe<StringQueryOperatorInput>;
-  techs: InputMaybe<StringQueryOperatorInput>;
-};
-
-
-type Query_workTitleJsonArgs = {
-  children: InputMaybe<NodeFilterListInput>;
-  company: InputMaybe<StringQueryOperatorInput>;
-  id: InputMaybe<StringQueryOperatorInput>;
-  internal: InputMaybe<InternalFilterInput>;
-  month: InputMaybe<StringQueryOperatorInput>;
-  parent: InputMaybe<NodeFilterInput>;
-  position: InputMaybe<StringQueryOperatorInput>;
-  title: InputMaybe<StringQueryOperatorInput>;
-  year: InputMaybe<DateQueryOperatorInput>;
 };
 
 type Site = Node & {
@@ -1854,303 +1782,6 @@ type StringQueryOperatorInput = {
   readonly nin: InputMaybe<ReadonlyArray<InputMaybe<Scalars['String']>>>;
   readonly regex: InputMaybe<Scalars['String']>;
 };
-
-type WorkProjectJson = Node & {
-  readonly activities: Maybe<ReadonlyArray<Maybe<Scalars['String']>>>;
-  readonly children: ReadonlyArray<Node>;
-  readonly id: Scalars['ID'];
-  readonly index: Maybe<Scalars['Int']>;
-  readonly industry: Maybe<Scalars['String']>;
-  readonly internal: Internal;
-  readonly parent: Maybe<Node>;
-  readonly product: Maybe<Scalars['String']>;
-  readonly project: Maybe<Scalars['String']>;
-  readonly role: Maybe<Scalars['String']>;
-  readonly techs: Maybe<ReadonlyArray<Maybe<Scalars['String']>>>;
-};
-
-type WorkProjectJsonConnection = {
-  readonly distinct: ReadonlyArray<Scalars['String']>;
-  readonly edges: ReadonlyArray<WorkProjectJsonEdge>;
-  readonly group: ReadonlyArray<WorkProjectJsonGroupConnection>;
-  readonly max: Maybe<Scalars['Float']>;
-  readonly min: Maybe<Scalars['Float']>;
-  readonly nodes: ReadonlyArray<WorkProjectJson>;
-  readonly pageInfo: PageInfo;
-  readonly sum: Maybe<Scalars['Float']>;
-  readonly totalCount: Scalars['Int'];
-};
-
-
-type WorkProjectJsonConnection_distinctArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonConnection_groupArgs = {
-  field: WorkProjectJsonFieldSelector;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-};
-
-
-type WorkProjectJsonConnection_maxArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonConnection_minArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonConnection_sumArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-type WorkProjectJsonEdge = {
-  readonly next: Maybe<WorkProjectJson>;
-  readonly node: WorkProjectJson;
-  readonly previous: Maybe<WorkProjectJson>;
-};
-
-type WorkProjectJsonFieldSelector = {
-  readonly activities: InputMaybe<FieldSelectorEnum>;
-  readonly children: InputMaybe<NodeFieldSelector>;
-  readonly id: InputMaybe<FieldSelectorEnum>;
-  readonly index: InputMaybe<FieldSelectorEnum>;
-  readonly industry: InputMaybe<FieldSelectorEnum>;
-  readonly internal: InputMaybe<InternalFieldSelector>;
-  readonly parent: InputMaybe<NodeFieldSelector>;
-  readonly product: InputMaybe<FieldSelectorEnum>;
-  readonly project: InputMaybe<FieldSelectorEnum>;
-  readonly role: InputMaybe<FieldSelectorEnum>;
-  readonly techs: InputMaybe<FieldSelectorEnum>;
-};
-
-type WorkProjectJsonFilterInput = {
-  readonly activities: InputMaybe<StringQueryOperatorInput>;
-  readonly children: InputMaybe<NodeFilterListInput>;
-  readonly id: InputMaybe<StringQueryOperatorInput>;
-  readonly index: InputMaybe<IntQueryOperatorInput>;
-  readonly industry: InputMaybe<StringQueryOperatorInput>;
-  readonly internal: InputMaybe<InternalFilterInput>;
-  readonly parent: InputMaybe<NodeFilterInput>;
-  readonly product: InputMaybe<StringQueryOperatorInput>;
-  readonly project: InputMaybe<StringQueryOperatorInput>;
-  readonly role: InputMaybe<StringQueryOperatorInput>;
-  readonly techs: InputMaybe<StringQueryOperatorInput>;
-};
-
-type WorkProjectJsonFilterListInput = {
-  readonly elemMatch: InputMaybe<WorkProjectJsonFilterInput>;
-};
-
-type WorkProjectJsonGroupConnection = {
-  readonly distinct: ReadonlyArray<Scalars['String']>;
-  readonly edges: ReadonlyArray<WorkProjectJsonEdge>;
-  readonly field: Scalars['String'];
-  readonly fieldValue: Maybe<Scalars['String']>;
-  readonly group: ReadonlyArray<WorkProjectJsonGroupConnection>;
-  readonly max: Maybe<Scalars['Float']>;
-  readonly min: Maybe<Scalars['Float']>;
-  readonly nodes: ReadonlyArray<WorkProjectJson>;
-  readonly pageInfo: PageInfo;
-  readonly sum: Maybe<Scalars['Float']>;
-  readonly totalCount: Scalars['Int'];
-};
-
-
-type WorkProjectJsonGroupConnection_distinctArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonGroupConnection_groupArgs = {
-  field: WorkProjectJsonFieldSelector;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-};
-
-
-type WorkProjectJsonGroupConnection_maxArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonGroupConnection_minArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-
-type WorkProjectJsonGroupConnection_sumArgs = {
-  field: WorkProjectJsonFieldSelector;
-};
-
-type WorkProjectJsonSortInput = {
-  readonly activities: InputMaybe<SortOrderEnum>;
-  readonly children: InputMaybe<NodeSortInput>;
-  readonly id: InputMaybe<SortOrderEnum>;
-  readonly index: InputMaybe<SortOrderEnum>;
-  readonly industry: InputMaybe<SortOrderEnum>;
-  readonly internal: InputMaybe<InternalSortInput>;
-  readonly parent: InputMaybe<NodeSortInput>;
-  readonly product: InputMaybe<SortOrderEnum>;
-  readonly project: InputMaybe<SortOrderEnum>;
-  readonly role: InputMaybe<SortOrderEnum>;
-  readonly techs: InputMaybe<SortOrderEnum>;
-};
-
-type WorkTitleJson = Node & {
-  readonly children: ReadonlyArray<Node>;
-  readonly company: Maybe<Scalars['String']>;
-  readonly id: Scalars['ID'];
-  readonly internal: Internal;
-  readonly month: Maybe<Scalars['String']>;
-  readonly parent: Maybe<Node>;
-  readonly position: Maybe<Scalars['String']>;
-  readonly title: Maybe<Scalars['String']>;
-  readonly year: Maybe<Scalars['Date']>;
-};
-
-
-type WorkTitleJson_yearArgs = {
-  difference: InputMaybe<Scalars['String']>;
-  formatString: InputMaybe<Scalars['String']>;
-  fromNow: InputMaybe<Scalars['Boolean']>;
-  locale: InputMaybe<Scalars['String']>;
-};
-
-type WorkTitleJsonConnection = {
-  readonly distinct: ReadonlyArray<Scalars['String']>;
-  readonly edges: ReadonlyArray<WorkTitleJsonEdge>;
-  readonly group: ReadonlyArray<WorkTitleJsonGroupConnection>;
-  readonly max: Maybe<Scalars['Float']>;
-  readonly min: Maybe<Scalars['Float']>;
-  readonly nodes: ReadonlyArray<WorkTitleJson>;
-  readonly pageInfo: PageInfo;
-  readonly sum: Maybe<Scalars['Float']>;
-  readonly totalCount: Scalars['Int'];
-};
-
-
-type WorkTitleJsonConnection_distinctArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonConnection_groupArgs = {
-  field: WorkTitleJsonFieldSelector;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-};
-
-
-type WorkTitleJsonConnection_maxArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonConnection_minArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonConnection_sumArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-type WorkTitleJsonEdge = {
-  readonly next: Maybe<WorkTitleJson>;
-  readonly node: WorkTitleJson;
-  readonly previous: Maybe<WorkTitleJson>;
-};
-
-type WorkTitleJsonFieldSelector = {
-  readonly children: InputMaybe<NodeFieldSelector>;
-  readonly company: InputMaybe<FieldSelectorEnum>;
-  readonly id: InputMaybe<FieldSelectorEnum>;
-  readonly internal: InputMaybe<InternalFieldSelector>;
-  readonly month: InputMaybe<FieldSelectorEnum>;
-  readonly parent: InputMaybe<NodeFieldSelector>;
-  readonly position: InputMaybe<FieldSelectorEnum>;
-  readonly title: InputMaybe<FieldSelectorEnum>;
-  readonly year: InputMaybe<FieldSelectorEnum>;
-};
-
-type WorkTitleJsonFilterInput = {
-  readonly children: InputMaybe<NodeFilterListInput>;
-  readonly company: InputMaybe<StringQueryOperatorInput>;
-  readonly id: InputMaybe<StringQueryOperatorInput>;
-  readonly internal: InputMaybe<InternalFilterInput>;
-  readonly month: InputMaybe<StringQueryOperatorInput>;
-  readonly parent: InputMaybe<NodeFilterInput>;
-  readonly position: InputMaybe<StringQueryOperatorInput>;
-  readonly title: InputMaybe<StringQueryOperatorInput>;
-  readonly year: InputMaybe<DateQueryOperatorInput>;
-};
-
-type WorkTitleJsonFilterListInput = {
-  readonly elemMatch: InputMaybe<WorkTitleJsonFilterInput>;
-};
-
-type WorkTitleJsonGroupConnection = {
-  readonly distinct: ReadonlyArray<Scalars['String']>;
-  readonly edges: ReadonlyArray<WorkTitleJsonEdge>;
-  readonly field: Scalars['String'];
-  readonly fieldValue: Maybe<Scalars['String']>;
-  readonly group: ReadonlyArray<WorkTitleJsonGroupConnection>;
-  readonly max: Maybe<Scalars['Float']>;
-  readonly min: Maybe<Scalars['Float']>;
-  readonly nodes: ReadonlyArray<WorkTitleJson>;
-  readonly pageInfo: PageInfo;
-  readonly sum: Maybe<Scalars['Float']>;
-  readonly totalCount: Scalars['Int'];
-};
-
-
-type WorkTitleJsonGroupConnection_distinctArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonGroupConnection_groupArgs = {
-  field: WorkTitleJsonFieldSelector;
-  limit: InputMaybe<Scalars['Int']>;
-  skip: InputMaybe<Scalars['Int']>;
-};
-
-
-type WorkTitleJsonGroupConnection_maxArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonGroupConnection_minArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-
-type WorkTitleJsonGroupConnection_sumArgs = {
-  field: WorkTitleJsonFieldSelector;
-};
-
-type WorkTitleJsonSortInput = {
-  readonly children: InputMaybe<NodeSortInput>;
-  readonly company: InputMaybe<SortOrderEnum>;
-  readonly id: InputMaybe<SortOrderEnum>;
-  readonly internal: InputMaybe<InternalSortInput>;
-  readonly month: InputMaybe<SortOrderEnum>;
-  readonly parent: InputMaybe<NodeSortInput>;
-  readonly position: InputMaybe<SortOrderEnum>;
-  readonly title: InputMaybe<SortOrderEnum>;
-  readonly year: InputMaybe<SortOrderEnum>;
-};
-
-type IndexPageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-type IndexPageQuery = { readonly allWorkTitleJson: { readonly edges: ReadonlyArray<{ readonly node: { readonly year: string | null, readonly month: string | null, readonly company: string | null, readonly position: string | null, readonly title: string | null } }> }, readonly allWorkProjectJson: { readonly edges: ReadonlyArray<{ readonly node: { readonly index: number | null, readonly project: string | null, readonly role: string | null, readonly product: string | null, readonly industry: string | null, readonly activities: ReadonlyArray<string | null> | null, readonly techs: ReadonlyArray<string | null> | null } }> } };
 
 
 }
