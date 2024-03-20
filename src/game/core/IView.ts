@@ -1,6 +1,6 @@
-import { Container } from 'pixi.js';
+import { Application, Container } from 'pixi.js';
 
 export interface IView {
   container: Container;
-  initializeView(): void;
+  initializeView(app: Application, parent: Container): Promise<void>;
 }

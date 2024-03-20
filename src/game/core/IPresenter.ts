@@ -1,3 +1,3 @@
 export interface IPresenter {
-  initializePresenter(): void;
+  initializePresenter(): Promise<void>;
 }

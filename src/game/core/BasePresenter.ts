@@ -1,22 +1,22 @@
 import { IPresenter } from './IPresenter';
 import { IView } from './IView';
 
-export abstract class BasePresenter<T extends IView> implements IPresenter {
-  private readonly _view: T;
+export abstract class BasePresenter<V extends IView> implements IPresenter {
+  private readonly _view: V;
 
-  constructor(view: T) {
+  constructor(view: V) {
     this._view = view;
   }
 
-  public initializePresenter(): void {
-    this.prepare();
+  public async initializePresenter(): Promise<void> {
+    await this.prepare();
   }
 
-  protected prepare(): void {
+  protected prepare(): void | Promise<void> {
     // Virtual
   }
 
-  protected get view(): T {
+  protected get view(): V {
     return this._view;
   }
 }
