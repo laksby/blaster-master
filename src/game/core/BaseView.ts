@@ -66,6 +66,14 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     container.scale.set(originalX, originalY);
   }
 
+  protected async animateHide(container: Container, duration: number): Promise<void> {
+    await this.animate(elapsed => {
+      const { x, y } = vectorLerp(container.scale, { x: 0, y: 0 }, elapsed / duration);
+      container.scale.set(x, y);
+    }, duration);
+    container.scale.set(0, 0);
+  }
+
   protected async animateMove(container: Container, newPosition: PointData, duration: number): Promise<void> {
     await this.animate(elapsed => {
       const { x, y } = vectorLerp(container.position, newPosition, elapsed / duration);

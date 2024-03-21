@@ -46,6 +46,7 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     }
     // Delete tile
     else if (tile && !type) {
+      await this.animateHide(tile, 100);
       tile.destroy();
       this.tilePositions.delete(tile);
     }

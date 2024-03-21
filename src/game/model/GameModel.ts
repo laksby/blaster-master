@@ -1,6 +1,8 @@
 import { PointData } from 'pixi.js';
 import { TileType } from '../types';
 
+export type OnVictoryHandler = () => void | Promise<void>;
+export type OnDefeatHandler = (reason: string) => void | Promise<void>;
 export type OnShuffleHandler = (shifts: [PointData, PointData][]) => void | Promise<void>;
 
 export class GameModel {
@@ -11,6 +13,8 @@ export class GameModel {
   private _types = Object.values(TileType);
   private _tiles: (TileType | undefined)[][] = [];
   private _shuffles = 3;
+  private _onVictory?: OnVictoryHandler;
+  private _onDefeat?: OnDefeatHandler;
   private _onShuffle?: OnShuffleHandler;
 
   private constructor() {}
@@ -140,6 +144,10 @@ export class GameModel {
   public shuffle(): [PointData, PointData][] {
     const shifts: [PointData, PointData][] = [];
 
+    if (this.shuffles <= 0) {
+      return shifts;
+    }
+
     for (let y = 0; y < this.rows; y++) {
       for (let x = this.cols - 1; x > 0; x--) {
         const newX = Math.floor(Math.random() * (x + 1));
@@ -155,6 +163,14 @@ export class GameModel {
     this._onShuffle?.(shifts);
 
     return shifts;
+  }
+
+  public onVictory(onVictory: OnVictoryHandler): void {
+    this._onVictory = onVictory;
+  }
+
+  public onDefeat(onDefeat: OnDefeatHandler): void {
+    this._onDefeat = onDefeat;
   }
 
   public onShuffle(onShuffle: OnShuffleHandler): void {
@@ -174,5 +190,9 @@ export class GameModel {
     }
 
     return level;
+  }
+
+  private defeat(reason: string): void {
+    this._onDefeat?.(reason);
   }
 }

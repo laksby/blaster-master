@@ -25,7 +25,7 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
   }
 
   public updateShuffles(shuffles: number): void {
-    this.content!.text = `Shuffle - ${shuffles} remaining`;
+    this.content!.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
   }
 
   private async loadButton(): Promise<void> {

@@ -53,8 +53,15 @@ export class BoardPresenter extends BasePresenter<IBoardView> implements IBoardP
   private async clearTiles(group: PointData[]): Promise<void> {
     for (const item of group) {
       GameModel.singleton.setTile(item, undefined);
-      await this.view.setTile(item, undefined);
     }
+
+    const emptyPositions = GameModel.singleton.getEmptyPositions();
+
+    await Promise.all(
+      emptyPositions.map(position => {
+        return this.view.setTile(position, undefined);
+      }),
+    );
   }
 
   private async shiftTiles(shifts: [PointData, PointData][]): Promise<void> {
