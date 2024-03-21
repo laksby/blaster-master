@@ -1,6 +1,8 @@
 import FontFaceObserver from 'fontfaceobserver';
 import { Application, Assets } from 'pixi.js';
+import { GameModel } from './model';
 import { AppView } from './modules/App';
+import { GlobalOptions } from './types';
 
 export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const app = new Application();
@@ -15,6 +17,7 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   });
 
   Assets.add({ alias: 'board', src: 'img/board.png' });
+  Assets.add({ alias: 'button', src: 'img/button.png' });
   Assets.add({ alias: 'tile-blue', src: 'img/tile-blue.png' });
   Assets.add({ alias: 'tile-pink', src: 'img/tile-pink.png' });
   Assets.add({ alias: 'tile-red', src: 'img/tile-red.png' });
@@ -24,6 +27,13 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const font = new FontFaceObserver('Super Squad');
   await font.load();
 
-  const appView = new AppView();
+  const options: GlobalOptions = {
+    cols: GameModel.singleton.cols,
+    rows: GameModel.singleton.rows,
+    uiScale: 0.4,
+    tileTypes: GameModel.singleton.types,
+  };
+
+  const appView = new AppView(options);
   await appView.initializeView(app, app.stage);
 }

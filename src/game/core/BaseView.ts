@@ -63,6 +63,7 @@ export abstract class BaseView<P extends IPresenter> implements IView {
       const { x, y } = vectorLerp(container.scale, { x: originalX, y: originalY }, elapsed / duration);
       container.scale.set(x, y);
     }, duration);
+    container.scale.set(originalX, originalY);
   }
 
   protected async animateMove(container: Container, newPosition: PointData, duration: number): Promise<void> {
@@ -70,6 +71,7 @@ export abstract class BaseView<P extends IPresenter> implements IView {
       const { x, y } = vectorLerp(container.position, newPosition, elapsed / duration);
       container.position.set(x, y);
     }, duration);
+    container.position.set(newPosition.x, newPosition.y);
   }
 
   protected async animate(action: (elapsed: number) => void, duration: number): Promise<void> {

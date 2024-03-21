@@ -1,12 +1,12 @@
 import { Assets, ColorMatrixFilter, PointData, Sprite, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
-import { TileType } from '../../types';
+import { GlobalOptions, TileType } from '../../types';
 import { BoardPresenter } from './BoardPresenter';
 import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
 
 export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
-  private readonly scale = 0.4;
+  private readonly options: GlobalOptions;
 
   private backgroundWidth = 0;
   private backgroundHeight = 0;
@@ -15,11 +15,14 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   private paddingX = 0;
   private paddingY = 0;
   private tileShift = 0.89;
-  private cols = 9;
-  private rows = 10;
   private tilePositions = new Map<Sprite, PointData>();
   private tileTextures = new Map<TileType, Texture>();
   private canInteract = true;
+
+  constructor(options: GlobalOptions) {
+    super();
+    this.options = options;
+  }
 
   protected async load(): Promise<void> {
     this.usePresenter(BoardPresenter);
@@ -27,10 +30,11 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     await this.loadBackground();
     await this.loadTileTextures();
 
-    this.paddingX = (this.backgroundWidth - this.tileWidth * this.cols) / 2;
-    this.paddingY = (this.backgroundHeight - this.tileHeight * this.tileShift * (this.rows - 1) - this.tileHeight) / 2;
+    this.paddingX = (this.backgroundWidth - this.tileWidth * this.options.cols) / 2;
+    this.paddingY =
+      (this.backgroundHeight - this.tileHeight * this.tileShift * (this.options.rows - 1) - this.tileHeight) / 2;
 
-    await this.presenter.generate(this.cols, this.rows);
+    this.presenter.generate();
   }
 
   public async setTile(position: PointData, type: TileType | undefined): Promise<void> {
@@ -65,11 +69,31 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
     if (tile) {
       this.canInteract = false;
-      const newCoordinates = this.getTileCoordinates(to);
       this.tilePositions.set(tile, to);
 
-      await this.animateMove(tile, newCoordinates, 300);
-      tile.zIndex = 2 + this.rows - to.y;
+      await this.animateMove(tile, this.getTileCoordinates(to), 300);
+      tile.zIndex = 2 + this.options.rows - to.y;
+
+      this.canInteract = true;
+    }
+  }
+
+  public async switchTiles(from: PointData, to: PointData): Promise<void> {
+    const tileFrom = this.findTile(from);
+    const tileTo = this.findTile(to);
+
+    if (tileFrom && tileTo) {
+      this.canInteract = false;
+      this.tilePositions.set(tileFrom, to);
+      this.tilePositions.set(tileTo, from);
+
+      await Promise.all([
+        this.animateMove(tileFrom, this.getTileCoordinates(to), 300),
+        this.animateMove(tileTo, this.getTileCoordinates(from), 300),
+      ]);
+
+      tileFrom.zIndex = 2 + this.options.rows - to.y;
+      tileTo.zIndex = 2 + this.options.rows - to.y;
       this.canInteract = true;
     }
   }
@@ -77,10 +101,13 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   private async loadBackground(): Promise<void> {
     const texture: Texture = await Assets.load('board');
 
-    this.backgroundWidth = texture.width * this.scale;
-    this.backgroundHeight = texture.height * this.scale;
+    this.backgroundWidth = texture.width * this.options.uiScale;
+    this.backgroundHeight = texture.height * this.options.uiScale;
 
-    this.container.position.set(this.app.screen.width / 2 - this.backgroundWidth, 100);
+    this.container.position.set(
+      this.app.screen.width / 2 - this.backgroundWidth / 2,
+      this.app.screen.height / 2 - this.backgroundHeight / 2,
+    );
 
     this.use(
       new Sprite({
@@ -93,17 +120,16 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   }
 
   private async loadTileTextures(): Promise<void> {
-    const tileTypes = Object.values(TileType);
     const tileTextures: Texture[] = await Promise.all(
-      tileTypes.map(type => {
+      this.options.tileTypes.map(type => {
         return Assets.load(`tile-${type}`);
       }),
     );
 
-    this.tileWidth = (tileTextures[0]?.width ?? 0) * this.scale;
-    this.tileHeight = (tileTextures[0]?.height ?? 0) * this.scale;
+    this.tileWidth = (tileTextures[0]?.width ?? 0) * this.options.uiScale;
+    this.tileHeight = (tileTextures[0]?.height ?? 0) * this.options.uiScale;
 
-    tileTypes.forEach((type, index) => {
+    this.options.tileTypes.forEach((type, index) => {
       this.tileTextures.set(type, tileTextures[index]);
     });
   }
@@ -139,7 +165,7 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
         eventMode: 'static',
         cursor: 'pointer',
         position: coordinates,
-        zIndex: 2 + this.rows - position.y,
+        zIndex: 2 + this.options.rows - position.y,
       }),
     );
 
