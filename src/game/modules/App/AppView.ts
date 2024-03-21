@@ -6,7 +6,6 @@ import { IAppView } from './IAppView';
 
 export class AppView extends BaseView<IAppPresenter> implements IAppView {
   protected async load(): Promise<void> {
-    this.useContainer();
     this.usePresenter(AppPresenter);
 
     await this.useChild(new BoardView());

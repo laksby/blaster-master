@@ -1,4 +1,4 @@
-import { Assets, ColorMatrixFilter, Sprite, Texture } from 'pixi.js';
+import { Assets, ColorMatrixFilter, PointData, Sprite, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
 import { TileType } from '../../types';
 import { BoardPresenter } from './BoardPresenter';
@@ -17,45 +17,61 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   private tileShift = 0.89;
   private cols = 9;
   private rows = 10;
-  private tiles = new Map<string, Sprite>();
+  private tilePositions = new Map<Sprite, PointData>();
   private tileTextures = new Map<TileType, Texture>();
+  private canInteract = true;
 
   protected async load(): Promise<void> {
-    this.useContainer();
     this.usePresenter(BoardPresenter);
 
     await this.loadBackground();
     await this.loadTileTextures();
 
-    this.container.position.set(this.app.screen.width / 2 - this.backgroundWidth, 100);
     this.paddingX = (this.backgroundWidth - this.tileWidth * this.cols) / 2;
     this.paddingY = (this.backgroundHeight - this.tileHeight * this.tileShift * (this.rows - 1) - this.tileHeight) / 2;
 
-    this.presenter.generate(this.cols, this.rows);
+    await this.presenter.generate(this.cols, this.rows);
   }
 
-  public setTile(x: number, y: number, type: TileType): void {
-    const tile = this.tiles.get(this.getTileKey(x, y));
-    const texture = this.tileTextures.get(type)!;
+  public async setTile(position: PointData, type: TileType | undefined): Promise<void> {
+    const tile = this.findTile(position);
 
-    if (tile) {
-      tile.texture = texture;
-    } else {
-      this.tiles.set(this.getTileKey(x, y), this.createTile(x, y, texture));
+    // Update tile
+    if (tile && type) {
+      tile.texture = this.tileTextures.get(type)!;
+    }
+    // Delete tile
+    else if (tile && !type) {
+      tile.destroy();
+      this.tilePositions.delete(tile);
+    }
+    // Create tile
+    else if (!tile && type) {
+      this.canInteract = false;
+      const newTile = this.createTile(position, this.tileTextures.get(type)!);
+      await this.animateAppear(newTile, 100);
+
+      this.tilePositions.set(newTile, position);
+      this.canInteract = true;
+    }
+    // Error
+    else {
+      throw new Error('Cannot create tile without type');
     }
   }
 
-  public clearTile(x: number, y: number): void {
-    const tile = this.tiles.get(this.getTileKey(x, y));
+  public async moveTile(from: PointData, to: PointData): Promise<void> {
+    const tile = this.findTile(from);
 
     if (tile) {
-      this.container.removeChild(tile);
-      this.tiles.delete(this.getTileKey(x, y));
-    }
-  }
+      this.canInteract = false;
+      const newCoordinates = this.getTileCoordinates(to);
+      this.tilePositions.set(tile, to);
 
-  private getTileKey(x: number, y: number): string {
-    return `${x}.${y}`;
+      await this.animateMove(tile, newCoordinates, 300);
+      tile.zIndex = 2 + this.rows - to.y;
+      this.canInteract = true;
+    }
   }
 
   private async loadBackground(): Promise<void> {
@@ -63,6 +79,8 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
     this.backgroundWidth = texture.width * this.scale;
     this.backgroundHeight = texture.height * this.scale;
+
+    this.container.position.set(this.app.screen.width / 2 - this.backgroundWidth, 100);
 
     this.use(
       new Sprite({
@@ -76,7 +94,11 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
   private async loadTileTextures(): Promise<void> {
     const tileTypes = Object.values(TileType);
-    const tileTextures: Texture[] = await Promise.all(tileTypes.map(type => Assets.load(`tile-${type}`)));
+    const tileTextures: Texture[] = await Promise.all(
+      tileTypes.map(type => {
+        return Assets.load(`tile-${type}`);
+      }),
+    );
 
     this.tileWidth = (tileTextures[0]?.width ?? 0) * this.scale;
     this.tileHeight = (tileTextures[0]?.height ?? 0) * this.scale;
@@ -86,22 +108,38 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     });
   }
 
-  private createTile(x: number, y: number, texture: Texture): Sprite {
+  private findTile(position: PointData): Sprite | undefined {
+    for (const [tile, tilePosition] of this.tilePositions) {
+      if (tilePosition.x === position.x && tilePosition.y === position.y) {
+        return tile;
+      }
+    }
+
+    return undefined;
+  }
+
+  private getTileCoordinates(position: PointData): PointData {
+    return {
+      x: this.paddingX + position.x * this.tileWidth + this.tileWidth / 2,
+      y: this.paddingY + position.y * this.tileHeight * this.tileShift + this.tileHeight / 2,
+    };
+  }
+
+  private createTile(position: PointData, texture: Texture): Sprite {
+    const coordinates = this.getTileCoordinates(position);
     const hoverFilter = new ColorMatrixFilter();
     hoverFilter.brightness(1.2, true);
 
     const tile = this.use(
       new Sprite({
         texture,
+        anchor: 0.5,
         width: this.tileWidth,
         height: this.tileHeight,
         eventMode: 'static',
         cursor: 'pointer',
-        position: {
-          x: this.paddingX + x * this.tileWidth,
-          y: this.paddingY + y * this.tileHeight * this.tileShift,
-        },
-        zIndex: 2 + this.rows - y,
+        position: coordinates,
+        zIndex: 2 + this.rows - position.y,
       }),
     );
 
@@ -113,8 +151,10 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
       tile.filters = [];
     });
 
-    tile.on('click', () => {
-      this.presenter.click(x, y);
+    tile.on('pointerdown', () => {
+      if (this.canInteract) {
+        this.presenter.click(this.tilePositions.get(tile)!);
+      }
     });
 
     return tile;
