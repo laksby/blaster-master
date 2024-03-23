@@ -4,6 +4,8 @@ import { TileType } from '../types';
 export type OnVictoryHandler = () => void | Promise<void>;
 export type OnDefeatHandler = (reason: string) => void | Promise<void>;
 export type OnShuffleHandler = (shifts: [PointData, PointData][]) => void | Promise<void>;
+export type OnScoreUpdateHandler = (score: number) => void | Promise<void>;
+export type OnTurnUpdateHandler = (turn: number) => void | Promise<void>;
 
 export class GameModel {
   public static readonly singleton = new GameModel();
@@ -13,9 +15,16 @@ export class GameModel {
   private _types = Object.values(TileType);
   private _tiles: (TileType | undefined)[][] = [];
   private _shuffles = 3;
+  private _score = 0;
+  private _turn = 0;
+  private _maxScore = 100;
+  private _maxTurn = 20;
+  private _clearThreshold = 2;
   private _onVictory?: OnVictoryHandler;
   private _onDefeat?: OnDefeatHandler;
   private _onShuffle?: OnShuffleHandler;
+  private _onScoreUpdate?: OnScoreUpdateHandler;
+  private _onTurnUpdate?: OnTurnUpdateHandler;
 
   private constructor() {}
 
@@ -37,6 +46,26 @@ export class GameModel {
 
   public get shuffles(): number {
     return this._shuffles;
+  }
+
+  public get score(): number {
+    return this._score;
+  }
+
+  public get turn(): number {
+    return this._turn;
+  }
+
+  public get maxScore(): number {
+    return this._maxScore;
+  }
+
+  public get maxTurn(): number {
+    return this._maxTurn;
+  }
+
+  public get clearThreshold(): number {
+    return this._clearThreshold;
   }
 
   public getRow(index: number): (TileType | undefined)[] {
@@ -141,6 +170,24 @@ export class GameModel {
     return shifts;
   }
 
+  public updateScore(clearedGroup: PointData[]): void {
+    this._score += 2 ** (clearedGroup.length - 1);
+    this._onScoreUpdate?.(this.score);
+
+    if (this.score >= this.maxScore) {
+      this.victory();
+    }
+  }
+
+  public updateTurn(): void {
+    this._turn++;
+    this._onTurnUpdate?.(this.turn);
+
+    if (this.turn === this.maxTurn && this.score < this.maxScore) {
+      this.defeat('Not reached score in limited turns');
+    }
+  }
+
   public shuffle(): [PointData, PointData][] {
     const shifts: [PointData, PointData][] = [];
 
@@ -162,6 +209,14 @@ export class GameModel {
     this._shuffles--;
     this._onShuffle?.(shifts);
 
+    if (this.shuffles <= 0) {
+      const combinations = this.analyzeForCombinations();
+
+      if (combinations.length <= 0) {
+        this.defeat('No more combinations on board');
+      }
+    }
+
     return shifts;
   }
 
@@ -175,6 +230,14 @@ export class GameModel {
 
   public onShuffle(onShuffle: OnShuffleHandler): void {
     this._onShuffle = onShuffle;
+  }
+
+  public onScoreUpdate(onScoreUpdate: OnScoreUpdateHandler): void {
+    this._onScoreUpdate = onScoreUpdate;
+  }
+
+  public onTurnUpdate(onTurnUpdate: OnTurnUpdateHandler): void {
+    this._onTurnUpdate = onTurnUpdate;
   }
 
   private getGeneratedTile(): TileType {
@@ -194,5 +257,46 @@ export class GameModel {
 
   private defeat(reason: string): void {
     this._onDefeat?.(reason);
+  }
+
+  private victory(): void {
+    this._onVictory?.();
+  }
+
+  private analyzeForCombinations(): PointData[][] {
+    const allPositions: PointData[] = [];
+    const combinations: PointData[][] = [];
+
+    for (let y = 0; y < this.rows; y++) {
+      for (let x = 0; x < this.cols; x++) {
+        allPositions.push({ x, y });
+      }
+    }
+
+    while (allPositions.length > 0) {
+      const group: PointData[] = [];
+      const position = allPositions[0];
+      const tile = this.getTile(position);
+
+      if (!tile) {
+        allPositions.splice(0, 1);
+      } else {
+        this.searchClearCandidates(position, tile, group);
+
+        if (group.length >= this.clearThreshold) {
+          combinations.push(group);
+        }
+
+        for (const item of group) {
+          const index = allPositions.findIndex(position => position.x === item.x && position.y === item.y);
+
+          if (index >= 0) {
+            allPositions.splice(index, 1);
+          }
+        }
+      }
+    }
+
+    return combinations;
   }
 }

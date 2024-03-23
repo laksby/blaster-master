@@ -26,12 +26,15 @@ export class BoardPresenter extends BasePresenter<IBoardView> implements IBoardP
     const group: PointData[] = [];
     GameModel.singleton.searchClearCandidates(position, type, group);
 
-    if (group.length >= 2) {
+    if (group.length >= GameModel.singleton.clearThreshold) {
       await this.clearTiles(group);
+      GameModel.singleton.updateScore(group);
 
       const shifts = GameModel.singleton.applyGravity();
       await this.shiftTiles(shifts);
       await this.fillEmptyTiles();
+
+      GameModel.singleton.updateTurn();
     }
   }
 

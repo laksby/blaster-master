@@ -39,13 +39,30 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     return new Container();
   }
 
+  protected find<T extends Container>(label: string, children = this.container.children): T | undefined {
+    for (const component of children) {
+      if (component.label === label) {
+        return component as T;
+      }
+
+      const child = this.find(label, component.children);
+
+      if (child) {
+        return child as T;
+      }
+    }
+
+    return undefined;
+  }
+
   protected usePresenter(presenterType: Function): P {
     this._presenter = Reflect.construct(presenterType, [this]) as P;
     return this._presenter;
   }
 
-  protected use<C extends Container>(container: C): C {
+  protected use<C extends Container>(container: C, children: Container[] = []): C {
     this.container.addChild(container);
+    children.forEach(child => container.addChild(child));
     return container;
   }
 

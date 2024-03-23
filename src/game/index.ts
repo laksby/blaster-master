@@ -18,6 +18,8 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
 
   Assets.add({ alias: 'board', src: 'img/board.png' });
   Assets.add({ alias: 'button', src: 'img/button.png' });
+  Assets.add({ alias: 'score', src: 'img/score.png' });
+  Assets.add({ alias: 'turn', src: 'img/turn.png' });
   Assets.add({ alias: 'tile-blue', src: 'img/tile-blue.png' });
   Assets.add({ alias: 'tile-pink', src: 'img/tile-pink.png' });
   Assets.add({ alias: 'tile-red', src: 'img/tile-red.png' });
@@ -27,9 +29,13 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const font = new FontFaceObserver('Super Squad');
   await font.load();
 
+  const containerWidth = app.screen.width / 2;
+
   const options: GlobalOptions = {
     cols: GameModel.singleton.cols,
     rows: GameModel.singleton.rows,
+    containerLeftBound: (app.screen.width - containerWidth) / 2,
+    containerRightBound: (app.screen.width + containerWidth) / 2,
     uiScale: 0.4,
     tileTypes: GameModel.singleton.types,
   };

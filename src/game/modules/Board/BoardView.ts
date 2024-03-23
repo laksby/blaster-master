@@ -6,7 +6,7 @@ import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
 
 export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
-  private readonly options: GlobalOptions;
+  public readonly options: GlobalOptions;
 
   private backgroundWidth = 0;
   private backgroundHeight = 0;

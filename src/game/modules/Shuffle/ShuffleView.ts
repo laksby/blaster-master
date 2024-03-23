@@ -4,12 +4,11 @@ import { GlobalOptions } from '../../types';
 import { IShufflePresenter } from './IShufflePresenter';
 import { IShuffleView } from './IShuffleView';
 import { ShufflePresenter } from './ShufflePresenter';
+import { attachHover } from '../../utils';
 
 export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffleView {
-  private readonly options: GlobalOptions;
+  public readonly options: GlobalOptions;
 
-  private buttonWidth = 0;
-  private buttonHeight = 0;
   private content?: Text;
 
   constructor(options: GlobalOptions) {
@@ -21,7 +20,6 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
     this.usePresenter(ShufflePresenter);
 
     await this.loadButton();
-    this.loadContent();
   }
 
   public updateShuffles(shuffles: number): void {
@@ -29,62 +27,44 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
   }
 
   private async loadButton(): Promise<void> {
-    const hoverFilter = new ColorMatrixFilter();
-    hoverFilter.brightness(1.2, true);
-
     const texture: Texture = await Assets.load('button');
 
-    this.buttonWidth = texture.width * this.options.uiScale;
-    this.buttonHeight = texture.height * this.options.uiScale;
-
-    this.container.position.set(
-      this.app.screen.width / 2 - this.buttonWidth / 2,
-      this.app.screen.height - this.buttonHeight,
-    );
+    const offset = 16;
+    const height = 80;
+    const width = (texture.width * height) / texture.height;
 
     const button = this.use(
       new Sprite({
         texture,
         eventMode: 'static',
         cursor: 'pointer',
-        width: this.buttonWidth,
-        height: this.buttonHeight,
+        width,
+        height,
+        position: {
+          x: (this.app.screen.width - width) / 2,
+          y: this.app.screen.height - offset - height,
+        },
         zIndex: 1,
       }),
+      [
+        new Text({
+          label: 'content',
+          anchor: { x: 0.5, y: 0.6 },
+          zIndex: 2,
+          position: { x: texture.width / 2, y: texture.height / 2 },
+          style: {
+            fontFamily: 'Super Squad',
+            fontSize: 72,
+            fill: 0xffffff,
+            letterSpacing: 2,
+          },
+        }),
+      ],
     );
 
-    button.on('mouseover', () => {
-      button.filters = [hoverFilter];
-    });
+    attachHover(button);
+    button.on('pointerdown', () => this.presenter.shuffle());
 
-    button.on('mouseleave', () => {
-      button.filters = [];
-    });
-
-    button.on('pointerdown', () => {
-      this.presenter.shuffle();
-    });
-  }
-
-  private loadContent(): void {
-    this.content = this.use(
-      new Text({
-        anchor: {
-          x: 0.5,
-          y: 0.6,
-        },
-        zIndex: 2,
-        position: {
-          x: this.buttonWidth / 2,
-          y: this.buttonHeight / 2,
-        },
-        style: {
-          fontFamily: 'Super Squad',
-          fontSize: 32,
-          fill: 0xffffff,
-          letterSpacing: 2,
-        },
-      }),
-    );
+    this.content = this.find<Text>('content');
   }
 }
