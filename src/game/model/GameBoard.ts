@@ -21,7 +21,7 @@ export class GameBoard {
     return this._clearThreshold;
   }
 
-  public getRow(index: number): (TileType | undefined)[] {
+  public getRow(index: number): (TileType | undefined)[] | undefined {
     return this._tiles[index];
   }
 

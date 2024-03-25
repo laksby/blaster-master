@@ -12,9 +12,18 @@ export abstract class BasePresenter<V extends IView, M> implements IPresenter {
 
   public async initializePresenter(): Promise<void> {
     await this.prepare();
+    await this.refresh();
+  }
+
+  public async refreshView(): Promise<void> {
+    await this.refresh();
   }
 
   protected prepare(): void | Promise<void> {
+    // Virtual
+  }
+
+  protected refresh(): void | Promise<void> {
     // Virtual
   }
 

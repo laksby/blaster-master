@@ -1,11 +1,12 @@
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
-import { getProportionalSize } from '../../utils';
+import { getProportionalSize, getWidthFitSize } from '../../utils';
 import { IStatsPresenter } from './IStatsPresenter';
 import { IStatsView } from './IStatsView';
 import { StatsPresenter } from './StatsPresenter';
 
 export interface StatsViewOptions {
+  bottomBound: number;
   leftBound: number;
   rightBound: number;
 }
@@ -13,43 +14,62 @@ export interface StatsViewOptions {
 export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
   protected readonly _options: StatsViewOptions;
 
-  private _score?: Text;
-  private _turn?: Text;
-
   constructor(options: StatsViewOptions) {
-    super();
+    super(StatsPresenter);
     this._options = options;
   }
 
-  protected async load(): Promise<void> {
-    this.usePresenter(StatsPresenter);
+  public get scoreContainer(): Sprite {
+    return this.ensureChild<Sprite>('scoreContainer');
+  }
 
+  public get turnContainer(): Sprite {
+    return this.ensureChild<Sprite>('turnContainer');
+  }
+
+  public get score(): Text {
+    return this.ensureChild<Text>('score');
+  }
+
+  public get turn(): Text {
+    return this.ensureChild<Text>('turn');
+  }
+
+  protected async load(): Promise<void> {
     await this.loadScore();
     await this.loadTurn();
   }
 
   public updateScore(score: number, maxScore: number): void {
-    this._score!.text = `${score} / ${maxScore}`;
+    this.score.text = `${score} / ${maxScore}`;
   }
 
   public updateTurn(turn: number, maxTurn: number): void {
-    this._turn!.text = `${turn} / ${maxTurn}`;
+    this.turn.text = `${turn} / ${maxTurn}`;
   }
 
   private async loadScore(): Promise<void> {
     const texture: Texture = await Assets.load('score');
 
-    const offset = 16;
-    const { width, height } = getProportionalSize(texture, { height: 60 });
+    const minimalHeight = 60;
+
+    const { width, height } = getWidthFitSize(
+      this.app.screen.width / 3,
+      getProportionalSize(texture, { height: minimalHeight }),
+    );
 
     this.use(
       new Sprite({
+        label: 'scoreContainer',
         texture,
         width,
         height,
         position: {
           x: this._options.rightBound - width,
-          y: offset,
+          y:
+            this._options.bottomBound < minimalHeight
+              ? this._options.bottomBound - height / 2
+              : this._options.bottomBound - height,
         },
         zIndex: 1,
       }),
@@ -80,25 +100,27 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
         }),
       ],
     );
-
-    this._score = this.find<Text>('score');
   }
 
   private async loadTurn(): Promise<void> {
     const texture: Texture = await Assets.load('turn');
 
-    const offset = 16;
-    const height = 60;
-    const width = (texture.width * height) / texture.height;
+    const minimalHeight = 60;
+
+    const { width, height } = getProportionalSize(texture, { height: this.scoreContainer.height });
 
     this.use(
       new Sprite({
+        label: 'turnContainer',
         texture,
-        height,
         width,
+        height,
         position: {
           x: this._options.leftBound,
-          y: offset,
+          y:
+            this._options.bottomBound < minimalHeight
+              ? this._options.bottomBound - height / 2
+              : this._options.bottomBound - height,
         },
         zIndex: 1,
       }),
@@ -129,7 +151,5 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
         }),
       ],
     );
-
-    this._turn = this.find<Text>('turn');
   }
 }

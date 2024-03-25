@@ -1,23 +1,43 @@
-import { Application, Container, PointData } from 'pixi.js';
-import { vectorLerp } from '../utils';
+import { Application, Container } from 'pixi.js';
+import { Animator } from './Animator';
 import { IPresenter } from './IPresenter';
 import { IView } from './IView';
 
 export abstract class BaseView<P extends IPresenter> implements IView {
+  private readonly _presenterType: Function;
+
   private _app?: Application;
   private _container?: Container;
   private _model?: unknown;
   private _presenter?: P;
+  private _animator?: Animator;
+  private _searchCache = new Map<string, Container | undefined>();
+
+  constructor(presenterType: Function) {
+    this._presenterType = presenterType;
+  }
 
   public async initializeView(app: Application, parent: Container, model: unknown): Promise<void> {
+    if (this._container) {
+      this._container.destroy();
+    }
+
     this._app = app;
     this._container = this.createContainer();
     this._model = model;
+    this._animator = new Animator(app);
+    this._searchCache.clear();
 
     parent.addChild(this.container);
 
+    this._presenter = Reflect.construct(this._presenterType, [this, this._model]) as P;
+
     await this.load();
     await this.presenter.initializePresenter();
+  }
+
+  public async refreshView(parent: Container): Promise<void> {
+    await this.initializeView(this.app, parent, this._model);
   }
 
   public get container(): Container {
@@ -32,6 +52,10 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     return this._presenter || this.throwNotInitialized('Presenter');
   }
 
+  protected get animator(): Animator {
+    return this._animator || this.throwNotInitialized('Animator');
+  }
+
   protected load(): void | Promise<void> {
     // Virtual
   }
@@ -41,25 +65,35 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     return new Container();
   }
 
-  protected find<T extends Container>(label: string, children = this.container.children): T | undefined {
+  protected ensureChild<T extends Container>(label: string): T {
+    return this.child(label) || this.throwNotInitialized(`Child with label: ${label}`);
+  }
+
+  protected child<T extends Container>(label: string): T | undefined {
+    if (this._searchCache.has(label)) {
+      return this._searchCache.get(label) as T;
+    }
+
+    const child = this.searchChild(label, this.container.children);
+    this._searchCache.set(label, child);
+
+    return child as T;
+  }
+
+  protected searchChild(label: string, children: Container[]): Container | undefined {
     for (const component of children) {
       if (component.label === label) {
-        return component as T;
+        return component;
       }
 
-      const child = this.find(label, component.children);
+      const child = this.searchChild(label, component.children);
 
       if (child) {
-        return child as T;
+        return child;
       }
     }
 
     return undefined;
-  }
-
-  protected usePresenter(presenterType: Function): P {
-    this._presenter = Reflect.construct(presenterType, [this, this._model]) as P;
-    return this._presenter;
   }
 
   protected use<C extends Container>(container: C, children: Container[] = []): C {
@@ -68,59 +102,9 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     return container;
   }
 
-  protected async useChild<V extends IView>(view: V): Promise<V> {
+  protected async useChild<V extends BaseView<IPresenter>>(view: V): Promise<V> {
     await view.initializeView(this.app, this.container, this._model);
     return view;
-  }
-
-  protected async animateAppear(container: Container, duration: number): Promise<void> {
-    const originalX = container.scale.x;
-    const originalY = container.scale.y;
-    container.scale.set(0, 0);
-
-    await this.animate(elapsed => {
-      const { x, y } = vectorLerp(container.scale, { x: originalX, y: originalY }, elapsed / duration);
-      container.scale.set(x, y);
-    }, duration);
-    container.scale.set(originalX, originalY);
-  }
-
-  protected async animateHide(container: Container, duration: number): Promise<void> {
-    await this.animate(elapsed => {
-      const { x, y } = vectorLerp(container.scale, { x: 0, y: 0 }, elapsed / duration);
-      container.scale.set(x, y);
-    }, duration);
-    container.scale.set(0, 0);
-  }
-
-  protected async animateMove(container: Container, newPosition: PointData, duration: number): Promise<void> {
-    await this.animate(elapsed => {
-      const { x, y } = vectorLerp(container.position, newPosition, elapsed / duration);
-      container.position.set(x, y);
-    }, duration);
-    container.position.set(newPosition.x, newPosition.y);
-  }
-
-  protected async animate(action: (elapsed: number) => void, duration: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      let elapsed = 0;
-
-      const update = () => {
-        elapsed += this.app.ticker.deltaMS;
-        action(elapsed);
-
-        if (elapsed > duration) {
-          this.app.ticker.remove(update);
-          resolve();
-        }
-      };
-
-      try {
-        this.app.ticker.add(update);
-      } catch (err) {
-        reject(err);
-      }
-    });
   }
 
   protected throwNotInitialized(target: string): never {

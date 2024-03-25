@@ -2,6 +2,7 @@ import FontFaceObserver from 'fontfaceobserver';
 import { Application, Assets } from 'pixi.js';
 import { GameModel } from './model';
 import { AppView } from './modules/App';
+import { debounce } from './utils';
 
 export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const app = new Application();
@@ -37,4 +38,9 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   });
 
   await appView.initializeView(app, app.stage, gameModel);
+
+  await gameModel.startLevel();
+
+  const resize = debounce(() => appView.refreshView(app.stage), 300);
+  window.addEventListener('resize', resize);
 }

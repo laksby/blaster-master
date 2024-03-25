@@ -21,6 +21,10 @@ export class GameModel {
     return this._board;
   }
 
+  public async startLevel(): Promise<void> {
+    await this.events.emit('startLevel', []);
+  }
+
   public populateBoard() {
     this.board.fill(() => this.level.generateTile());
   }
@@ -75,6 +79,10 @@ export class GameModel {
 
     for (let y = this.board.rows - 1; y >= 0; y--) {
       const row = this.board.getRow(y);
+
+      if (!row) {
+        break;
+      }
 
       for (let x = 0; x < this.board.cols; x++) {
         const tile = row[x];

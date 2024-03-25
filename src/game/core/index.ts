@@ -1,3 +1,4 @@
+export * from './Animator';
 export * from './BasePresenter';
 export * from './BaseView';
 export * from './IPresenter';

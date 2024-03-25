@@ -1,28 +1,43 @@
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
-import { attachHover, getProportionalSize } from '../../utils';
+import { attachHover, getProportionalSize, getWidthFitSize } from '../../utils';
 import { IShufflePresenter } from './IShufflePresenter';
 import { IShuffleView } from './IShuffleView';
 import { ShufflePresenter } from './ShufflePresenter';
 
+export interface ShuffleViewOptions {
+  topBound: number;
+}
+
 export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffleView {
-  private _content?: Text;
+  protected readonly _options: ShuffleViewOptions;
+
+  constructor(options: ShuffleViewOptions) {
+    super(ShufflePresenter);
+    this._options = options;
+  }
+
+  public get content(): Text {
+    return this.ensureChild<Text>('content');
+  }
 
   protected async load(): Promise<void> {
-    this.usePresenter(ShufflePresenter);
-
     await this.loadButton();
   }
 
   public updateShuffles(shuffles: number): void {
-    this._content!.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
+    this.content.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
   }
 
   private async loadButton(): Promise<void> {
     const texture: Texture = await Assets.load('button');
 
-    const offset = 16;
-    const { width, height } = getProportionalSize(texture, { height: 80 });
+    const minimalHeight = 80;
+
+    const { width, height } = getWidthFitSize(
+      this.app.screen.width,
+      getProportionalSize(texture, { height: minimalHeight }),
+    );
 
     const button = this.use(
       new Sprite({
@@ -33,7 +48,10 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
         height,
         position: {
           x: (this.app.screen.width - width) / 2,
-          y: this.app.screen.height - offset - height,
+          y:
+            this.app.screen.height - this._options.topBound < minimalHeight
+              ? this._options.topBound - height / 2
+              : this._options.topBound,
         },
         zIndex: 1,
       }),
@@ -55,7 +73,5 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
 
     attachHover(button);
     button.on('pointerdown', () => this.presenter.shuffle());
-
-    this._content = this.find<Text>('content');
   }
 }

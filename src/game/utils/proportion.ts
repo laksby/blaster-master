@@ -15,3 +15,8 @@ export function getProportionalSize(base: Size, input: Partial<Size>): Size {
     throw new Error('Either width or height should be provided');
   }
 }
+
+export function getWidthFitSize(widthToFit: number, input: Size): Size {
+  const width = Math.min(widthToFit, input.width);
+  return getProportionalSize(input, { width });
+}

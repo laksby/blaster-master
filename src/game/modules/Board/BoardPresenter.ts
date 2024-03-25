@@ -8,18 +8,24 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
   private _isEnabledInteraction = true;
 
   protected prepare(): void {
-    this.model.events.on('shuffle', async shifts => {
-      await this.switchTiles(shifts);
-    });
+    this.model.events.on('startLevel', () => this.generate());
+    this.model.events.on('shuffle', shifts => this.switchTiles(shifts));
   }
 
-  public async generate(): Promise<void> {
-    this._isEnabledInteraction = false;
+  protected async refresh(): Promise<void> {
+    for (let y = 0; y < this.model.board.rows; y++) {
+      const row = this.model.board.getRow(y);
 
-    this.model.populateBoard();
-    await this.updateTiles();
+      if (!row) {
+        break;
+      }
 
-    this._isEnabledInteraction = true;
+      await Promise.all(
+        row.map((type, x) => {
+          return this.view.setTile({ x, y }, type);
+        }),
+      );
+    }
   }
 
   public async click(position: PointData): Promise<void> {
@@ -52,14 +58,13 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
     this._isEnabledInteraction = true;
   }
 
-  private async updateTiles(): Promise<void> {
-    for (let y = 0; y < this.model.board.rows; y++) {
-      await Promise.all(
-        this.model.board.getRow(y).map((type, x) => {
-          return this.view.setTile({ x, y }, type);
-        }),
-      );
-    }
+  private async generate(): Promise<void> {
+    this._isEnabledInteraction = false;
+
+    this.model.populateBoard();
+    await this.refreshView();
+
+    this._isEnabledInteraction = true;
   }
 
   private async clearTiles(group: PointData[]): Promise<void> {

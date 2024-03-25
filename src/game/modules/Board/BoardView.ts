@@ -1,7 +1,7 @@
 import { Assets, PointData, Sprite, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
 import { TileType } from '../../model';
-import { attachHover, getProportionalSize } from '../../utils';
+import { attachHover, getProportionalSize, getWidthFitSize } from '../../utils';
 import { BoardPresenter } from './BoardPresenter';
 import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
@@ -22,31 +22,25 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   private _paddingY = 0;
   private _tilePositions = new Map<Sprite, PointData>();
 
-  private _background?: Sprite;
-
   constructor(options: BoardViewOptions) {
-    super();
+    super(BoardPresenter);
     this._options = options;
   }
 
   public get background(): Sprite {
-    return this._background || this.throwNotInitialized('Background');
+    return this.ensureChild<Sprite>('background');
   }
 
   protected async load(): Promise<void> {
-    this.usePresenter(BoardPresenter);
-
     await this.loadBackground();
 
     const paddingScale = 0.9;
 
-    this._tileWidth = (this._background!.width * paddingScale) / this._options.cols;
-    this._tileHeight = (this._background!.height - paddingScale) / this._options.rows;
+    this._tileWidth = (this.background.width * paddingScale) / this._options.cols;
+    this._tileHeight = (this.background.height - paddingScale) / this._options.rows;
 
-    this._paddingX = (this._background!.width * (1 - paddingScale)) / 2;
-    this._paddingY = (this._background!.height * (1 - paddingScale)) / 2;
-
-    this.presenter.generate();
+    this._paddingX = (this.background.width * (1 - paddingScale)) / 2;
+    this._paddingY = (this.background.height * (1 - paddingScale)) / 2;
   }
 
   public async setTile(position: PointData, type: TileType | undefined): Promise<void> {
@@ -58,14 +52,14 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     }
     // Delete tile
     else if (tile && !type) {
-      await this.animateHide(tile, 100);
+      await this.animator.hide(tile, 100);
       tile.destroy();
       this._tilePositions.delete(tile);
     }
     // Create tile
     else if (!tile && type) {
       const newTile = this.createTile(position, this._options.tileTextures.get(type)!);
-      await this.animateAppear(newTile, 100);
+      await this.animator.appear(newTile, 100);
 
       this._tilePositions.set(newTile, position);
     }
@@ -81,7 +75,7 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     if (tile) {
       this._tilePositions.set(tile, to);
 
-      await this.animateMove(tile, this.getTileCoordinates(to), 300);
+      await this.animator.move(tile, this.getTileCoordinates(to), 300);
       tile.zIndex = 2 + this._options.rows - to.y;
     }
   }
@@ -95,8 +89,8 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
       this._tilePositions.set(tileTo, from);
 
       await Promise.all([
-        this.animateMove(tileFrom, this.getTileCoordinates(to), 300),
-        this.animateMove(tileTo, this.getTileCoordinates(from), 300),
+        this.animator.move(tileFrom, this.getTileCoordinates(to), 300),
+        this.animator.move(tileTo, this.getTileCoordinates(from), 300),
       ]);
 
       tileFrom.zIndex = 2 + this._options.rows - to.y;
@@ -109,9 +103,13 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
     const offsetTop = 40;
     const offsetBottom = 64;
-    const { width, height } = getProportionalSize(texture, {
-      height: this.app.screen.height - offsetTop - offsetBottom,
-    });
+
+    const { width, height } = getWidthFitSize(
+      this.app.screen.width,
+      getProportionalSize(texture, {
+        height: this.app.screen.height - offsetTop - offsetBottom,
+      }),
+    );
 
     this.use(
       new Sprite({
@@ -121,13 +119,11 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
         height,
         position: {
           x: (this.app.screen.width - width) / 2,
-          y: offsetTop,
+          y: (this.app.screen.height - height) / 2,
         },
         zIndex: 1,
       }),
     );
-
-    this._background = this.find<Sprite>('background');
   }
 
   private findTile(position: PointData): Sprite | undefined {
@@ -142,9 +138,9 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
   private getTileCoordinates(position: PointData): PointData {
     return {
-      x: this._background!.position.x + this._paddingX + position.x * this._tileWidth + this._tileWidth / 2,
+      x: this.background.position.x + this._paddingX + position.x * this._tileWidth + this._tileWidth / 2,
       y:
-        this._background!.position.y +
+        this.background.position.y +
         this._paddingY +
         position.y * this._tileHeight * this._options.tileVerticalProportion +
         this._tileHeight / 2,

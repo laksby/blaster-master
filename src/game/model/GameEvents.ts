@@ -1,6 +1,7 @@
 import { PointData } from 'pixi.js';
 
 export interface Events {
+  startLevel(this: GameEvents): void | Promise<void>;
   victory(this: GameEvents): void | Promise<void>;
   defeat(this: GameEvents, reason: string): void | Promise<void>;
   shuffle(this: GameEvents, shifts: [PointData, PointData][]): void | Promise<void>;

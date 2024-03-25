@@ -18,13 +18,11 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
   protected readonly _options: AppViewOptions;
 
   constructor(options: AppViewOptions) {
-    super();
+    super(AppPresenter);
     this._options = options;
   }
 
   protected async load(): Promise<void> {
-    this.usePresenter(AppPresenter);
-
     const textures = await Promise.all(this._options.allTileTypes.map(type => Assets.load(`tile-${type}`)));
 
     const tileTextures = new Map<TileType, Texture>(
@@ -40,10 +38,15 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
       }),
     );
 
-    await this.useChild(new ShuffleView());
+    await this.useChild(
+      new ShuffleView({
+        topBound: boardView.background.position.y + boardView.background.height,
+      }),
+    );
 
     await this.useChild(
       new StatsView({
+        bottomBound: boardView.background.position.y,
         leftBound: boardView.background.position.x,
         rightBound: boardView.background.position.x + boardView.background.width,
       }),
