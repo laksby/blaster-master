@@ -2,7 +2,6 @@ import FontFaceObserver from 'fontfaceobserver';
 import { Application, Assets } from 'pixi.js';
 import { GameModel } from './model';
 import { AppView } from './modules/App';
-import { GlobalOptions } from './types';
 
 export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const app = new Application();
@@ -31,17 +30,11 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
 
   const gameModel = new GameModel();
 
-  const containerWidth = app.screen.width / 2;
-
-  const options: GlobalOptions = {
+  const appView = new AppView({
     cols: gameModel.board.cols,
     rows: gameModel.board.rows,
-    containerLeftBound: (app.screen.width - containerWidth) / 2,
-    containerRightBound: (app.screen.width + containerWidth) / 2,
-    uiScale: 0.4,
-    tileTypes: gameModel.level.tileTypes,
-  };
+    allTileTypes: gameModel.level.allTileTypes,
+  });
 
-  const appView = new AppView(options);
   await appView.initializeView(app, app.stage, gameModel);
 }

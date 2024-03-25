@@ -1,4 +1,4 @@
-import { TileType } from '../types';
+import { TileType } from './TileType';
 
 export class GameLevel {
   private _shuffles = 3;
@@ -6,7 +6,7 @@ export class GameLevel {
   private _turn = 0;
   private _maxScore = 100;
   private _maxTurn = 20;
-  private _tileTypes = Object.values(TileType);
+  private _allTileTypes = Object.values(TileType);
 
   public get shuffles(): number {
     return this._shuffles;
@@ -28,8 +28,8 @@ export class GameLevel {
     return this._maxTurn;
   }
 
-  public get tileTypes(): TileType[] {
-    return this._tileTypes;
+  public get allTileTypes(): TileType[] {
+    return this._allTileTypes;
   }
 
   public get isScoreVictory(): boolean {
@@ -53,7 +53,7 @@ export class GameLevel {
   }
 
   public generateTile(): TileType {
-    const random = Math.floor(Math.random() * this._tileTypes.length);
-    return this._tileTypes[random];
+    const random = Math.floor(Math.random() * this._allTileTypes.length);
+    return this._allTileTypes[random];
   }
 }

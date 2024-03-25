@@ -1,20 +1,12 @@
-import { Assets, ColorMatrixFilter, Sprite, Text, Texture } from 'pixi.js';
+import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
-import { GlobalOptions } from '../../types';
+import { attachHover, getProportionalSize } from '../../utils';
 import { IShufflePresenter } from './IShufflePresenter';
 import { IShuffleView } from './IShuffleView';
 import { ShufflePresenter } from './ShufflePresenter';
-import { attachHover } from '../../utils';
 
 export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffleView {
-  public readonly options: GlobalOptions;
-
-  private content?: Text;
-
-  constructor(options: GlobalOptions) {
-    super();
-    this.options = options;
-  }
+  private _content?: Text;
 
   protected async load(): Promise<void> {
     this.usePresenter(ShufflePresenter);
@@ -23,15 +15,14 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
   }
 
   public updateShuffles(shuffles: number): void {
-    this.content!.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
+    this._content!.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
   }
 
   private async loadButton(): Promise<void> {
     const texture: Texture = await Assets.load('button');
 
     const offset = 16;
-    const height = 80;
-    const width = (texture.width * height) / texture.height;
+    const { width, height } = getProportionalSize(texture, { height: 80 });
 
     const button = this.use(
       new Sprite({
@@ -65,6 +56,6 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
     attachHover(button);
     button.on('pointerdown', () => this.presenter.shuffle());
 
-    this.content = this.find<Text>('content');
+    this._content = this.find<Text>('content');
   }
 }

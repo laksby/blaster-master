@@ -1,19 +1,24 @@
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
-import { GlobalOptions } from '../../types';
+import { getProportionalSize } from '../../utils';
 import { IStatsPresenter } from './IStatsPresenter';
 import { IStatsView } from './IStatsView';
 import { StatsPresenter } from './StatsPresenter';
 
+export interface StatsViewOptions {
+  leftBound: number;
+  rightBound: number;
+}
+
 export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
-  public readonly options: GlobalOptions;
+  protected readonly _options: StatsViewOptions;
 
-  private score?: Text;
-  private turn?: Text;
+  private _score?: Text;
+  private _turn?: Text;
 
-  constructor(options: GlobalOptions) {
+  constructor(options: StatsViewOptions) {
     super();
-    this.options = options;
+    this._options = options;
   }
 
   protected async load(): Promise<void> {
@@ -24,27 +29,26 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
   }
 
   public updateScore(score: number, maxScore: number): void {
-    this.score!.text = `${score} / ${maxScore}`;
+    this._score!.text = `${score} / ${maxScore}`;
   }
 
   public updateTurn(turn: number, maxTurn: number): void {
-    this.turn!.text = `${turn} / ${maxTurn}`;
+    this._turn!.text = `${turn} / ${maxTurn}`;
   }
 
   private async loadScore(): Promise<void> {
     const texture: Texture = await Assets.load('score');
 
     const offset = 16;
-    const height = 60;
-    const width = (texture.width * height) / texture.height;
+    const { width, height } = getProportionalSize(texture, { height: 60 });
 
     this.use(
       new Sprite({
         texture,
-        height,
         width,
+        height,
         position: {
-          x: this.options.containerRightBound - width,
+          x: this._options.rightBound - width,
           y: offset,
         },
         zIndex: 1,
@@ -77,7 +81,7 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
       ],
     );
 
-    this.score = this.find<Text>('score');
+    this._score = this.find<Text>('score');
   }
 
   private async loadTurn(): Promise<void> {
@@ -93,7 +97,7 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
         height,
         width,
         position: {
-          x: this.options.containerLeftBound,
+          x: this._options.leftBound,
           y: offset,
         },
         zIndex: 1,
@@ -126,6 +130,6 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
       ],
     );
 
-    this.turn = this.find<Text>('turn');
+    this._turn = this.find<Text>('turn');
   }
 }

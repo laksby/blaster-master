@@ -1,11 +1,12 @@
 import { PointData } from 'pixi.js';
 import { BasePresenter } from '../../core';
-import { GameModel } from '../../model';
-import { TileType } from '../../types';
+import { GameModel, TileType } from '../../model';
 import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
 
 export class BoardPresenter extends BasePresenter<IBoardView, GameModel> implements IBoardPresenter {
+  private _isEnabledInteraction = true;
+
   protected prepare(): void {
     this.model.events.on('shuffle', async shifts => {
       await this.switchTiles(shifts);
@@ -13,11 +14,21 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
   }
 
   public async generate(): Promise<void> {
+    this._isEnabledInteraction = false;
+
     this.model.populateBoard();
     await this.updateTiles();
+
+    this._isEnabledInteraction = true;
   }
 
   public async click(position: PointData): Promise<void> {
+    if (!this._isEnabledInteraction) {
+      return;
+    }
+
+    this._isEnabledInteraction = false;
+
     const type = this.model.board.getTile(position);
 
     if (!type) {
@@ -37,6 +48,8 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
 
       await this.model.updateTurn();
     }
+
+    this._isEnabledInteraction = true;
   }
 
   private async updateTiles(): Promise<void> {

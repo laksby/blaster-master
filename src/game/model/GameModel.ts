@@ -1,8 +1,8 @@
 import { PointData } from 'pixi.js';
-import { TileType } from '../types';
 import { GameBoard } from './GameBoard';
 import { GameEvents } from './GameEvents';
 import { GameLevel } from './GameLevel';
+import { TileType } from './TileType';
 
 export class GameModel {
   private readonly _events = new GameEvents();

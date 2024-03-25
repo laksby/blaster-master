@@ -1,10 +1,10 @@
 import { PointData } from 'pixi.js';
-import { TileType } from '../types';
+import { TileType } from './TileType';
 
 export type BoardFillAction = (position: PointData) => TileType | undefined;
 
 export class GameBoard {
-  private _cols = 9;
+  private _cols = 10;
   private _rows = 10;
   private _clearThreshold = 2;
   private _tiles: (TileType | undefined)[][] = [];

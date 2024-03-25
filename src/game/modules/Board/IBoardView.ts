@@ -1,6 +1,6 @@
 import { PointData } from 'pixi.js';
 import { IView } from '../../core';
-import { TileType } from '../../types';
+import { TileType } from '../../model';
 
 export interface IBoardView extends IView {
   setTile(position: PointData, type: TileType | undefined): Promise<void>;

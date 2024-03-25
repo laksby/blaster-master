@@ -123,7 +123,7 @@ export abstract class BaseView<P extends IPresenter> implements IView {
     });
   }
 
-  private throwNotInitialized(target: string): never {
+  protected throwNotInitialized(target: string): never {
     throw new Error(`${target} not initialized inside view`);
   }
 }
