@@ -6,3 +6,8 @@ export function vectorLerp(from: PointData, to: PointData, amount: number): Poin
     y: (1 - amount) * from.y + amount * to.y,
   };
 }
+
+export function scalarOscillate(from: number, to: number, amount: number) {
+  const amplitude = (to - from) / 2;
+  return from + amplitude * Math.sin(2 * Math.PI * amount);
+}

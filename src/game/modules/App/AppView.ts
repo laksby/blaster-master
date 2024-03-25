@@ -1,4 +1,4 @@
-import { Assets, Texture } from 'pixi.js';
+import { Assets, PointData, Texture } from 'pixi.js';
 import { BaseView } from '../../core';
 import { TileType } from '../../model';
 import { BoardView } from '../Board';
@@ -17,6 +17,8 @@ export interface AppViewOptions {
 export class AppView extends BaseView<IAppPresenter> implements IAppView {
   protected readonly _options: AppViewOptions;
 
+  private boardView?: BoardView;
+
   constructor(options: AppViewOptions) {
     super(AppPresenter);
     this._options = options;
@@ -29,7 +31,7 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
       this._options.allTileTypes.map((type, index) => [type, textures[index]]),
     );
 
-    const boardView = await this.useChild(
+    this.boardView = await this.useChild(
       new BoardView({
         cols: this._options.cols,
         rows: this._options.rows,
@@ -40,16 +42,32 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
 
     await this.useChild(
       new ShuffleView({
-        topBound: boardView.background.position.y + boardView.background.height,
+        topBound: this.boardView.background.position.y + this.boardView.background.height,
       }),
     );
 
     await this.useChild(
       new StatsView({
-        bottomBound: boardView.background.position.y,
-        leftBound: boardView.background.position.x,
-        rightBound: boardView.background.position.x + boardView.background.width,
+        bottomBound: this.boardView.background.position.y,
+        leftBound: this.boardView.background.position.x,
+        rightBound: this.boardView.background.position.x + this.boardView.background.width,
       }),
     );
+  }
+
+  public async shockWave(position: PointData): Promise<void> {
+    const coordinates = this.boardView!.getTileCoordinates(position);
+
+    this.animator.shockWave(this.container, 1000, {
+      speed: 2000,
+      amplitude: 30,
+      wavelength: 160,
+      brightness: 1,
+      radius: -1,
+      center: {
+        x: coordinates.x - this.boardView!.background.width / 2,
+        y: coordinates.y,
+      },
+    });
   }
 }

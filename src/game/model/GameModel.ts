@@ -74,15 +74,27 @@ export class GameModel {
     });
   }
 
+  public searchBlastCandidates(position: PointData, group: PointData[]): void {
+    this.board.enumerate(item => {
+      if (item.x === position.x || item.y === position.y) {
+        group.push(item);
+      }
+    });
+  }
+
+  public async clearTiles(position: PointData, tile: TileType, group: PointData[]): Promise<void> {
+    this.events.emit('whenTileGroupClear', [position, tile]);
+
+    for (const item of group) {
+      this.board.setTile(item, undefined);
+    }
+  }
+
   public applyGravity(): [PointData, PointData][] {
     const shifts: [PointData, PointData][] = [];
 
     for (let y = this.board.rows - 1; y >= 0; y--) {
       const row = this.board.getRow(y);
-
-      if (!row) {
-        break;
-      }
 
       for (let x = 0; x < this.board.cols; x++) {
         const tile = row[x];
@@ -109,8 +121,8 @@ export class GameModel {
     return shifts;
   }
 
-  public async updateScore(clearedGroup: PointData[]): Promise<void> {
-    this.level.increaseScore(clearedGroup.length);
+  public async updateScore(tile: TileType, clearedGroup: PointData[]): Promise<void> {
+    this.level.increaseScore(tile, clearedGroup.length);
     await this.events.emit('scoreUpdate', [this.level.score]);
 
     if (this.level.isScoreVictory) {

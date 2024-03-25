@@ -4,4 +4,5 @@ export enum TileType {
   Red = 'red',
   Yellow = 'yellow',
   Green = 'green',
+  SpecialBlast = 'special-blast',
 }

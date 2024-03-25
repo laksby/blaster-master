@@ -69,6 +69,19 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     }
   }
 
+  public async setBlastTile(position: PointData): Promise<void> {
+    const tile = this.findTile(position);
+
+    // Update tile (make blast tile)
+    if (tile) {
+      this.animator.glow(tile, 1000);
+    }
+    // Error
+    else {
+      throw new Error('Cannot set blast tile at empty position');
+    }
+  }
+
   public async moveTile(from: PointData, to: PointData): Promise<void> {
     const tile = this.findTile(from);
 
@@ -96,6 +109,17 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
       tileFrom.zIndex = 2 + this._options.rows - to.y;
       tileTo.zIndex = 2 + this._options.rows - to.y;
     }
+  }
+
+  public getTileCoordinates(position: PointData): PointData {
+    return {
+      x: this.background.position.x + this._paddingX + position.x * this._tileWidth + this._tileWidth / 2,
+      y:
+        this.background.position.y +
+        this._paddingY +
+        position.y * this._tileHeight * this._options.tileVerticalProportion +
+        this._tileHeight / 2,
+    };
   }
 
   private async loadBackground(): Promise<void> {
@@ -134,17 +158,6 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
     }
 
     return undefined;
-  }
-
-  private getTileCoordinates(position: PointData): PointData {
-    return {
-      x: this.background.position.x + this._paddingX + position.x * this._tileWidth + this._tileWidth / 2,
-      y:
-        this.background.position.y +
-        this._paddingY +
-        position.y * this._tileHeight * this._options.tileVerticalProportion +
-        this._tileHeight / 2,
-    };
   }
 
   private createTile(position: PointData, texture: Texture): Sprite {
