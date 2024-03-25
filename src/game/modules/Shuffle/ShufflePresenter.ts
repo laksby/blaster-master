@@ -3,13 +3,13 @@ import { GameModel } from '../../model';
 import { IShufflePresenter } from './IShufflePresenter';
 import { IShuffleView } from './IShuffleView';
 
-export class ShufflePresenter extends BasePresenter<IShuffleView> implements IShufflePresenter {
+export class ShufflePresenter extends BasePresenter<IShuffleView, GameModel> implements IShufflePresenter {
   protected prepare(): void {
-    this.view.updateShuffles(GameModel.singleton.shuffles);
+    this.view.updateShuffles(this.model.level.shuffles);
   }
 
   public async shuffle(): Promise<void> {
-    GameModel.singleton.shuffle();
-    this.view.updateShuffles(GameModel.singleton.shuffles);
+    await this.model.shuffle();
+    this.view.updateShuffles(this.model.level.shuffles);
   }
 }

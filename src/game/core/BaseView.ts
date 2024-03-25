@@ -6,11 +6,13 @@ import { IView } from './IView';
 export abstract class BaseView<P extends IPresenter> implements IView {
   private _app?: Application;
   private _container?: Container;
+  private _model?: unknown;
   private _presenter?: P;
 
-  public async initializeView(app: Application, parent: Container): Promise<void> {
+  public async initializeView(app: Application, parent: Container, model: unknown): Promise<void> {
     this._app = app;
     this._container = this.createContainer();
+    this._model = model;
 
     parent.addChild(this.container);
 
@@ -56,7 +58,7 @@ export abstract class BaseView<P extends IPresenter> implements IView {
   }
 
   protected usePresenter(presenterType: Function): P {
-    this._presenter = Reflect.construct(presenterType, [this]) as P;
+    this._presenter = Reflect.construct(presenterType, [this, this._model]) as P;
     return this._presenter;
   }
 
@@ -67,7 +69,7 @@ export abstract class BaseView<P extends IPresenter> implements IView {
   }
 
   protected async useChild<V extends IView>(view: V): Promise<V> {
-    await view.initializeView(this.app, this.container);
+    await view.initializeView(this.app, this.container, this._model);
     return view;
   }
 

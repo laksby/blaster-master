@@ -29,17 +29,19 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const font = new FontFaceObserver('Super Squad');
   await font.load();
 
+  const gameModel = new GameModel();
+
   const containerWidth = app.screen.width / 2;
 
   const options: GlobalOptions = {
-    cols: GameModel.singleton.cols,
-    rows: GameModel.singleton.rows,
+    cols: gameModel.board.cols,
+    rows: gameModel.board.rows,
     containerLeftBound: (app.screen.width - containerWidth) / 2,
     containerRightBound: (app.screen.width + containerWidth) / 2,
     uiScale: 0.4,
-    tileTypes: GameModel.singleton.types,
+    tileTypes: gameModel.level.tileTypes,
   };
 
   const appView = new AppView(options);
-  await appView.initializeView(app, app.stage);
+  await appView.initializeView(app, app.stage, gameModel);
 }

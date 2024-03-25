@@ -3,17 +3,17 @@ import { GameModel } from '../../model';
 import { IStatsPresenter } from './IStatsPresenter';
 import { IStatsView } from './IStatsView';
 
-export class StatsPresenter extends BasePresenter<IStatsView> implements IStatsPresenter {
+export class StatsPresenter extends BasePresenter<IStatsView, GameModel> implements IStatsPresenter {
   protected prepare(): void {
-    GameModel.singleton.onScoreUpdate(async score => {
-      this.view.updateScore(score, GameModel.singleton.maxScore);
+    this.model.events.on('scoreUpdate', async score => {
+      this.view.updateScore(score, this.model.level.maxScore);
     });
 
-    GameModel.singleton.onTurnUpdate(async turn => {
-      this.view.updateTurn(turn, GameModel.singleton.maxTurn);
+    this.model.events.on('turnUpdate', async turn => {
+      this.view.updateTurn(turn, this.model.level.maxTurn);
     });
 
-    this.view.updateScore(GameModel.singleton.score, GameModel.singleton.maxScore);
-    this.view.updateTurn(GameModel.singleton.turn, GameModel.singleton.maxTurn);
+    this.view.updateScore(this.model.level.score, this.model.level.maxScore);
+    this.view.updateTurn(this.model.level.turn, this.model.level.maxTurn);
   }
 }

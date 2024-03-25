@@ -1,116 +1,46 @@
 import { PointData } from 'pixi.js';
 import { TileType } from '../types';
-
-export type OnVictoryHandler = () => void | Promise<void>;
-export type OnDefeatHandler = (reason: string) => void | Promise<void>;
-export type OnShuffleHandler = (shifts: [PointData, PointData][]) => void | Promise<void>;
-export type OnScoreUpdateHandler = (score: number) => void | Promise<void>;
-export type OnTurnUpdateHandler = (turn: number) => void | Promise<void>;
+import { GameBoard } from './GameBoard';
+import { GameEvents } from './GameEvents';
+import { GameLevel } from './GameLevel';
 
 export class GameModel {
-  public static readonly singleton = new GameModel();
+  private readonly _events = new GameEvents();
+  private readonly _level = new GameLevel();
+  private readonly _board = new GameBoard();
 
-  private _cols = 9;
-  private _rows = 10;
-  private _types = Object.values(TileType);
-  private _tiles: (TileType | undefined)[][] = [];
-  private _shuffles = 3;
-  private _score = 0;
-  private _turn = 0;
-  private _maxScore = 100;
-  private _maxTurn = 20;
-  private _clearThreshold = 2;
-  private _onVictory?: OnVictoryHandler;
-  private _onDefeat?: OnDefeatHandler;
-  private _onShuffle?: OnShuffleHandler;
-  private _onScoreUpdate?: OnScoreUpdateHandler;
-  private _onTurnUpdate?: OnTurnUpdateHandler;
-
-  private constructor() {}
-
-  public get cols(): number {
-    return this._cols;
+  public get events(): GameEvents {
+    return this._events;
   }
 
-  public get rows(): number {
-    return this._rows;
+  public get level(): GameLevel {
+    return this._level;
   }
 
-  public get types(): TileType[] {
-    return this._types;
+  public get board(): GameBoard {
+    return this._board;
   }
 
-  public get tiles(): (TileType | undefined)[][] {
-    return this._tiles;
+  public populateBoard() {
+    this.board.fill(() => this.level.generateTile());
   }
 
-  public get shuffles(): number {
-    return this._shuffles;
-  }
-
-  public get score(): number {
-    return this._score;
-  }
-
-  public get turn(): number {
-    return this._turn;
-  }
-
-  public get maxScore(): number {
-    return this._maxScore;
-  }
-
-  public get maxTurn(): number {
-    return this._maxTurn;
-  }
-
-  public get clearThreshold(): number {
-    return this._clearThreshold;
-  }
-
-  public getRow(index: number): (TileType | undefined)[] {
-    return this.tiles[index];
-  }
-
-  public getTile(position: PointData): TileType | undefined {
-    return this.tiles[position.y][position.x];
-  }
-
-  public setTile(position: PointData, tile: TileType | undefined): void {
-    this.tiles[position.y][position.x] = tile;
+  public populateBoardTile(position: PointData): TileType {
+    return this.board.setTile(position, this.level.generateTile())!;
   }
 
   public getEmptyPositions(): PointData[] {
     const emptyPositions: PointData[] = [];
 
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        if (!this.tiles[y][x]) {
+    for (let y = 0; y < this.board.rows; y++) {
+      for (let x = 0; x < this.board.cols; x++) {
+        if (!this.board.hasTile({ x, y })) {
           emptyPositions.push({ x, y });
         }
       }
     }
 
     return emptyPositions;
-  }
-
-  public generate() {
-    this._tiles = [];
-
-    for (let y = 0; y < this.rows; y++) {
-      this.tiles.push([]);
-
-      for (let x = 0; x < this.cols; x++) {
-        const tile = this.getGeneratedTile();
-        this.tiles[y].push(tile);
-      }
-    }
-  }
-
-  public generateTile(position: PointData): TileType {
-    const tile = this.getGeneratedTile();
-    this.setTile(position, tile);
-    return tile;
   }
 
   public searchClearCandidates(position: PointData, type: TileType, group: PointData[]): void {
@@ -126,14 +56,14 @@ export class GameModel {
       // Left
       position.x > 0 ? { x: position.x - 1, y: position.y } : undefined,
       // Right
-      position.x < this.cols - 1 ? { x: position.x + 1, y: position.y } : undefined,
+      position.x < this.board.cols - 1 ? { x: position.x + 1, y: position.y } : undefined,
       // Bottom
-      position.y < this.rows - 1 ? { x: position.x, y: position.y + 1 } : undefined,
+      position.y < this.board.rows - 1 ? { x: position.x, y: position.y + 1 } : undefined,
     ];
 
     neighbors.forEach(neighbor => {
       if (neighbor) {
-        if (this.tiles[neighbor.y][neighbor.x] === type) {
+        if (this.board.checkTile(neighbor, type)) {
           this.searchClearCandidates(neighbor, type, group);
         }
       }
@@ -143,10 +73,10 @@ export class GameModel {
   public applyGravity(): [PointData, PointData][] {
     const shifts: [PointData, PointData][] = [];
 
-    for (let y = this.rows - 1; y >= 0; y--) {
-      const row = this.tiles[y];
+    for (let y = this.board.rows - 1; y >= 0; y--) {
+      const row = this.board.getRow(y);
 
-      for (let x = 0; x < this.cols; x++) {
+      for (let x = 0; x < this.board.cols; x++) {
         const tile = row[x];
 
         if (!tile) {
@@ -154,11 +84,12 @@ export class GameModel {
           const topY = this.getClosestTopTileY(position);
 
           if (topY >= 0 && topY < position.y) {
-            const topTile = this.tiles[topY][x];
+            const topTilePosition = { x, y: topY };
+            const topTile = this._board.getTile(topTilePosition);
 
             if (topTile) {
-              this.tiles[y][x] = this.tiles[topY][x];
-              this.tiles[topY][x] = undefined;
+              this.board.setTile(position, topTile);
+              this.board.setTile(topTilePosition, undefined);
 
               shifts.push([{ x, y: topY }, position]);
             }
@@ -170,35 +101,35 @@ export class GameModel {
     return shifts;
   }
 
-  public updateScore(clearedGroup: PointData[]): void {
-    this._score += 2 ** (clearedGroup.length - 1);
-    this._onScoreUpdate?.(this.score);
+  public async updateScore(clearedGroup: PointData[]): Promise<void> {
+    this.level.increaseScore(clearedGroup.length);
+    await this.events.emit('scoreUpdate', [this.level.score]);
 
-    if (this.score >= this.maxScore) {
-      this.victory();
+    if (this.level.isScoreVictory) {
+      await this.victory();
     }
   }
 
-  public updateTurn(): void {
-    this._turn++;
-    this._onTurnUpdate?.(this.turn);
+  public async updateTurn(): Promise<void> {
+    this.level.increaseTurn();
+    await this.events.emit('turnUpdate', [this.level.turn]);
 
-    if (this.turn === this.maxTurn && this.score < this.maxScore) {
-      this.defeat('Not reached score in limited turns');
+    if (this.level.isTurnDefeat) {
+      await this.defeat('Not reached score in limited turns');
     }
   }
 
-  public shuffle(): [PointData, PointData][] {
+  public async shuffle(): Promise<[PointData, PointData][]> {
     const shifts: [PointData, PointData][] = [];
 
-    if (this.shuffles <= 0) {
+    if (this.level.shuffles <= 0) {
       return shifts;
     }
 
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = this.cols - 1; x > 0; x--) {
+    for (let y = 0; y < this.board.rows; y++) {
+      for (let x = this.board.cols - 1; x > 0; x--) {
         const newX = Math.floor(Math.random() * (x + 1));
-        [this.tiles[y][x], this.tiles[y][newX]] = [this.tiles[y][newX], this.tiles[y][x]];
+        this.board.swapTiles({ x, y }, { x: newX, y });
         shifts.push([
           { x, y },
           { x: newX, y },
@@ -206,69 +137,44 @@ export class GameModel {
       }
     }
 
-    this._shuffles--;
-    this._onShuffle?.(shifts);
+    this.level.decreaseShuffles();
+    await this.events.emit('shuffle', [shifts]);
 
-    if (this.shuffles <= 0) {
+    if (this.level.shuffles <= 0) {
       const combinations = this.analyzeForCombinations();
 
       if (combinations.length <= 0) {
-        this.defeat('No more combinations on board');
+        await this.defeat('No more combinations on board');
       }
     }
 
     return shifts;
   }
 
-  public onVictory(onVictory: OnVictoryHandler): void {
-    this._onVictory = onVictory;
-  }
-
-  public onDefeat(onDefeat: OnDefeatHandler): void {
-    this._onDefeat = onDefeat;
-  }
-
-  public onShuffle(onShuffle: OnShuffleHandler): void {
-    this._onShuffle = onShuffle;
-  }
-
-  public onScoreUpdate(onScoreUpdate: OnScoreUpdateHandler): void {
-    this._onScoreUpdate = onScoreUpdate;
-  }
-
-  public onTurnUpdate(onTurnUpdate: OnTurnUpdateHandler): void {
-    this._onTurnUpdate = onTurnUpdate;
-  }
-
-  private getGeneratedTile(): TileType {
-    const random = Math.floor(Math.random() * this.types.length);
-    return this.types[random];
-  }
-
   private getClosestTopTileY(position: PointData): number {
     let level = position.y - 1;
 
-    while (level >= 0 && !this.tiles[level][position.x]) {
+    while (level >= 0 && !this.board.hasTile({ x: position.x, y: level })) {
       level--;
     }
 
     return level;
   }
 
-  private defeat(reason: string): void {
-    this._onDefeat?.(reason);
+  private async defeat(reason: string): Promise<void> {
+    await this.events.emit('defeat', [reason]);
   }
 
-  private victory(): void {
-    this._onVictory?.();
+  private async victory(): Promise<void> {
+    await this.events.emit('victory', []);
   }
 
   private analyzeForCombinations(): PointData[][] {
     const allPositions: PointData[] = [];
     const combinations: PointData[][] = [];
 
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
+    for (let y = 0; y < this.board.rows; y++) {
+      for (let x = 0; x < this.board.cols; x++) {
         allPositions.push({ x, y });
       }
     }
@@ -276,14 +182,14 @@ export class GameModel {
     while (allPositions.length > 0) {
       const group: PointData[] = [];
       const position = allPositions[0];
-      const tile = this.getTile(position);
+      const tile = this.board.getTile(position);
 
       if (!tile) {
         allPositions.splice(0, 1);
       } else {
         this.searchClearCandidates(position, tile, group);
 
-        if (group.length >= this.clearThreshold) {
+        if (group.length >= this.board.clearThreshold) {
           combinations.push(group);
         }
 

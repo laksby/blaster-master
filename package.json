@@ -9,6 +9,7 @@
     "build": "gatsby build --prefix-paths",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
+    "test": "npm run typecheck",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "prepare": "husky"

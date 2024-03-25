@@ -5,48 +5,44 @@ import { TileType } from '../../types';
 import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
 
-export class BoardPresenter extends BasePresenter<IBoardView> implements IBoardPresenter {
+export class BoardPresenter extends BasePresenter<IBoardView, GameModel> implements IBoardPresenter {
   protected prepare(): void {
-    GameModel.singleton.onShuffle(async shifts => {
+    this.model.events.on('shuffle', async shifts => {
       await this.switchTiles(shifts);
     });
   }
 
   public async generate(): Promise<void> {
-    await this.generateTiles();
+    this.model.populateBoard();
+    await this.updateTiles();
   }
 
   public async click(position: PointData): Promise<void> {
-    const type = GameModel.singleton.getTile(position);
+    const type = this.model.board.getTile(position);
 
     if (!type) {
       return;
     }
 
     const group: PointData[] = [];
-    GameModel.singleton.searchClearCandidates(position, type, group);
+    this.model.searchClearCandidates(position, type, group);
 
-    if (group.length >= GameModel.singleton.clearThreshold) {
+    if (group.length >= this.model.board.clearThreshold) {
       await this.clearTiles(group);
-      GameModel.singleton.updateScore(group);
+      await this.model.updateScore(group);
 
-      const shifts = GameModel.singleton.applyGravity();
+      const shifts = this.model.applyGravity();
       await this.shiftTiles(shifts);
       await this.fillEmptyTiles();
 
-      GameModel.singleton.updateTurn();
+      await this.model.updateTurn();
     }
   }
 
-  private async generateTiles(): Promise<void> {
-    GameModel.singleton.generate();
-    await this.updateTiles();
-  }
-
   private async updateTiles(): Promise<void> {
-    for (let y = 0; y < GameModel.singleton.rows; y++) {
+    for (let y = 0; y < this.model.board.rows; y++) {
       await Promise.all(
-        GameModel.singleton.getRow(y).map((type, x) => {
+        this.model.board.getRow(y).map((type, x) => {
           return this.view.setTile({ x, y }, type);
         }),
       );
@@ -55,10 +51,10 @@ export class BoardPresenter extends BasePresenter<IBoardView> implements IBoardP
 
   private async clearTiles(group: PointData[]): Promise<void> {
     for (const item of group) {
-      GameModel.singleton.setTile(item, undefined);
+      this.model.board.setTile(item, undefined);
     }
 
-    const emptyPositions = GameModel.singleton.getEmptyPositions();
+    const emptyPositions = this.model.getEmptyPositions();
 
     await Promise.all(
       emptyPositions.map(position => {
@@ -85,10 +81,10 @@ export class BoardPresenter extends BasePresenter<IBoardView> implements IBoardP
 
   private async fillEmptyTiles(): Promise<void> {
     const tileRenderPull: [PointData, TileType][] = [];
-    const emptyPositions = GameModel.singleton.getEmptyPositions();
+    const emptyPositions = this.model.getEmptyPositions();
 
     for (const position of emptyPositions) {
-      const tile = GameModel.singleton.generateTile(position);
+      const tile = this.model.populateBoardTile(position);
       tileRenderPull.push([position, tile]);
     }
 
