@@ -8,7 +8,7 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
   private _isEnabledInteraction = true;
 
   protected prepare(): void {
-    this.model.events.on('startLevel', () => this.generate());
+    this.model.events.on('startLevel', () => this.resetLevel());
     this.model.events.on('shuffle', shifts => this.switchTiles(shifts));
   }
 
@@ -49,13 +49,9 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
     this._isEnabledInteraction = true;
   }
 
-  private async generate(): Promise<void> {
-    this._isEnabledInteraction = false;
-
-    this.model.populateBoard();
+  private async resetLevel(): Promise<void> {
+    this.view.reset();
     await this.refreshView();
-
-    this._isEnabledInteraction = true;
   }
 
   private async handleBlastTile(position: PointData): Promise<void> {

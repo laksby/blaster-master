@@ -1,12 +1,17 @@
 import { TileType } from './TileType';
 
 export class GameLevel {
-  private _shuffles = 3;
+  private _number = 0;
+  private _shuffles = 0;
   private _score = 0;
   private _turn = 0;
   private _maxScore = 100;
-  private _maxTurn = 20;
+  private _maxTurn = 22;
   private _allTileTypes = Object.values(TileType).filter(type => !type.startsWith('special-'));
+
+  public get number(): number {
+    return this._number;
+  }
 
   public get shuffles(): number {
     return this._shuffles;
@@ -53,6 +58,14 @@ export class GameLevel {
         this._score += 2 ** (cleared - 1);
         break;
     }
+  }
+
+  public increaseLevel(): void {
+    this._number++;
+    this._shuffles = 3;
+    this._score = 0;
+    this._turn = 0;
+    this._maxTurn -= 2;
   }
 
   public increaseTurn(): void {

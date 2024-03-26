@@ -1,5 +1,5 @@
 import { Assets, PointData, Sprite, Texture } from 'pixi.js';
-import { BaseView } from '../../core';
+import { AnimationHandle, BaseView } from '../../core';
 import { TileType } from '../../model';
 import { attachHover, getProportionalSize, getWidthFitSize } from '../../utils';
 import { BoardPresenter } from './BoardPresenter';
@@ -21,6 +21,7 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
   private _paddingX = 0;
   private _paddingY = 0;
   private _tilePositions = new Map<Sprite, PointData>();
+  private _specialAnimationHandle = new AnimationHandle();
 
   constructor(options: BoardViewOptions) {
     super(BoardPresenter);
@@ -41,6 +42,11 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
     this._paddingX = (this.background.width * (1 - paddingScale)) / 2;
     this._paddingY = (this.background.height * (1 - paddingScale)) / 2;
+  }
+
+  public reset(): void {
+    this._specialAnimationHandle.destroyAll();
+    this._specialAnimationHandle.clear();
   }
 
   public async setTile(position: PointData, type: TileType | undefined): Promise<void> {
@@ -74,7 +80,7 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
 
     // Update tile (make blast tile)
     if (tile) {
-      this.animator.glow(tile, 1000);
+      this.animator.glowStart(tile, 1000, this._specialAnimationHandle);
     }
     // Error
     else {

@@ -22,11 +22,9 @@ export class GameModel {
   }
 
   public async startLevel(): Promise<void> {
-    await this.events.emit('startLevel', []);
-  }
-
-  public populateBoard() {
+    this.level.increaseLevel();
     this.board.fill(() => this.level.generateTile());
+    await this.events.emit('startLevel', [this.level.number]);
   }
 
   public populateBoardTile(position: PointData): TileType {
@@ -186,7 +184,7 @@ export class GameModel {
   }
 
   private async victory(): Promise<void> {
-    await this.events.emit('victory', []);
+    await this.events.emit('victory', [this.level.number]);
   }
 
   private analyzeForCombinations(): PointData[][] {

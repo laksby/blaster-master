@@ -7,10 +7,12 @@ export class StatsPresenter extends BasePresenter<IStatsView, GameModel> impleme
   protected prepare(): void {
     this.model.events.on('scoreUpdate', () => this.refreshView());
     this.model.events.on('turnUpdate', () => this.refreshView());
+    this.model.events.on('startLevel', () => this.refreshView());
   }
 
   protected refresh(): void {
     this.view.updateScore(this.model.level.score, this.model.level.maxScore);
     this.view.updateTurn(this.model.level.turn, this.model.level.maxTurn);
+    this.view.updateLevel(this.model.level.number);
   }
 }

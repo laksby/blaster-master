@@ -35,9 +35,14 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
     return this.ensureChild<Text>('turn');
   }
 
+  public get level(): Text {
+    return this.ensureChild<Text>('level');
+  }
+
   protected async load(): Promise<void> {
     await this.loadScore();
     await this.loadTurn();
+    await this.loadLevel();
   }
 
   public updateScore(score: number, maxScore: number): void {
@@ -46,6 +51,10 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
 
   public updateTurn(turn: number, maxTurn: number): void {
     this.turn.text = `${turn} / ${maxTurn}`;
+  }
+
+  public updateLevel(level: number): void {
+    this.level.text = `Level ${level}`;
   }
 
   private async loadScore(): Promise<void> {
@@ -150,6 +159,26 @@ export class StatsView extends BaseView<IStatsPresenter> implements IStatsView {
           },
         }),
       ],
+    );
+  }
+
+  private async loadLevel(): Promise<void> {
+    this.use(
+      new Text({
+        label: 'level',
+        anchor: { x: 0.5, y: 1 },
+        zIndex: 2,
+        position: {
+          x: this.app.screen.width / 2,
+          y: this._options.bottomBound,
+        },
+        style: {
+          fontFamily: 'Super Squad',
+          fontSize: 20,
+          fill: 0x20366f,
+          letterSpacing: 2,
+        },
+      }),
     );
   }
 }
