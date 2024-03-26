@@ -1,12 +1,17 @@
 import { TileType } from './TileType';
 
+export const MAX_TURN = 30;
+export const MAX_SCORE = 200;
+export const MAX_SHUFFLES = 3;
+
 export class GameLevel {
   private _number = 0;
   private _shuffles = 0;
   private _score = 0;
   private _turn = 0;
-  private _maxScore = 200;
-  private _maxTurn = 30;
+  private _maxScore = MAX_SCORE;
+  private _maxTurn = MAX_TURN;
+  private _defeatReason = '';
   private _allTileTypes = Object.values(TileType).filter(type => !type.startsWith('special-'));
 
   public get number(): number {
@@ -31,6 +36,10 @@ export class GameLevel {
 
   public get maxTurn(): number {
     return this._maxTurn;
+  }
+
+  public get isDefeat(): boolean {
+    return !!this._defeatReason;
   }
 
   public get allTileTypes(): TileType[] {
@@ -62,9 +71,10 @@ export class GameLevel {
 
   public increaseLevel(): void {
     this._number++;
-    this._shuffles = 3;
+    this._shuffles = MAX_SHUFFLES;
     this._score = 0;
     this._turn = 0;
+    this._defeatReason = '';
   }
 
   public increaseDifficulty(): void {
@@ -73,6 +83,15 @@ export class GameLevel {
 
   public increaseTurn(): void {
     this._turn++;
+  }
+
+  public defeat(reason: string): void {
+    this._defeatReason = reason;
+  }
+
+  public reset(): void {
+    this._number = 0;
+    this._maxTurn = MAX_TURN;
   }
 
   public generateTile(): TileType {

@@ -21,6 +21,11 @@ export class GameModel {
     return this._board;
   }
 
+  public async restartGame(): Promise<void> {
+    this.level.reset();
+    await this.startLevel(false);
+  }
+
   public async startLevel(increaseDifficulty: boolean): Promise<void> {
     this.level.increaseLevel();
     this.board.fill(() => this.level.generateTile());
@@ -185,6 +190,7 @@ export class GameModel {
   }
 
   private async defeat(reason: string): Promise<void> {
+    this.level.defeat(reason);
     await this.events.emit('defeat', [reason]);
   }
 

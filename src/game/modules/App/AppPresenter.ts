@@ -8,15 +8,17 @@ export class AppPresenter extends BasePresenter<IAppView, GameModel> implements 
   protected prepare(): void {
     this.model.events.on('whenTileGroupClear', (position, tile) => this.clearingTiles(position, tile));
     this.model.events.on('victory', level => this.view.showVictory(level));
-
-    this.model.events.on('defeat', reason => {
-      console.log(`Defeat. Reason: ${reason}`);
-    });
+    this.model.events.on('defeat', reason => this.view.showDefeat(reason));
   }
 
-  public async startNextLevel(): Promise<void> {
+  public async continue(): Promise<void> {
     this.view.hideOverlay();
-    await this.model.startLevel(true);
+
+    if (this.model.level.isDefeat) {
+      this.model.restartGame();
+    } else {
+      await this.model.startLevel(true);
+    }
   }
 
   private async clearingTiles(position: PointData, tile: TileType): Promise<void> {

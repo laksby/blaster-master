@@ -28,8 +28,16 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
     return this.ensureChild<Container>('overlay');
   }
 
-  public get victoryLevel(): Text {
-    return this.ensureChild<Text>('victory-level');
+  public get icon(): Text {
+    return this.ensureChild<Text>('icon');
+  }
+
+  public get primaryText(): Text {
+    return this.ensureChild<Text>('primary-text');
+  }
+
+  public get secondaryText(): Text {
+    return this.ensureChild<Text>('secondary-text');
   }
 
   protected async load(): Promise<void> {
@@ -86,7 +94,16 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
   }
 
   public showVictory(level: number): void {
-    this.victoryLevel.text = `You reached level ${level + 1}`;
+    this.icon.text = '🎉';
+    this.primaryText.text = 'Victory!';
+    this.secondaryText.text = `You reached level ${level + 1}`;
+    this.overlay.visible = true;
+  }
+
+  public showDefeat(reason: string): void {
+    this.icon.text = '⛔';
+    this.primaryText.text = 'Defeat!';
+    this.secondaryText.text = reason;
     this.overlay.visible = true;
   }
 
@@ -105,7 +122,21 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
       [
         new Graphics().rect(0, 0, this.app.screen.width, this.app.screen.height).fill(overlayColor),
         new Text({
-          text: 'Victory!',
+          label: 'icon',
+          anchor: { x: 0.5, y: 1 },
+          position: {
+            x: this.app.screen.width / 2,
+            y: this.app.screen.height / 2 - 140,
+          },
+          style: {
+            fontFamily: 'Super Squad',
+            fontSize: 100,
+            fill: 0xffffff,
+            letterSpacing: 2,
+          },
+        }),
+        new Text({
+          label: 'primary-text',
           anchor: { x: 0.5, y: 1 },
           position: {
             x: this.app.screen.width / 2,
@@ -119,7 +150,7 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
           },
         }),
         new Text({
-          label: 'victory-level',
+          label: 'secondary-text',
           anchor: { x: 0.5, y: 0.2 },
           position: {
             x: this.app.screen.width / 2,
@@ -151,6 +182,6 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
       ],
     );
 
-    overlay.on('pointerdown', () => this.presenter.startNextLevel());
+    overlay.on('pointerdown', () => this.presenter.continue());
   }
 }
