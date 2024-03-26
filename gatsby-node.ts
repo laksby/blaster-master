@@ -9,6 +9,10 @@ export const onCreateWebpackConfig: GatsbyNode['onCreateWebpackConfig'] = args =
             test: /pixi-filters/,
             use: args.loaders.null(),
           },
+          {
+            test: /@pixi\/sound/,
+            use: args.loaders.null(),
+          },
         ],
       },
     });
