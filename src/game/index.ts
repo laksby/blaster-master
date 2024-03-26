@@ -39,7 +39,7 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
 
   await appView.initializeView(app, app.stage, gameModel);
 
-  await gameModel.startLevel();
+  await gameModel.startLevel(false);
 
   const resize = debounce(() => appView.refreshView(app.stage), 300);
   window.addEventListener('resize', resize);

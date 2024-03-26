@@ -5,8 +5,8 @@ export class GameLevel {
   private _shuffles = 0;
   private _score = 0;
   private _turn = 0;
-  private _maxScore = 100;
-  private _maxTurn = 22;
+  private _maxScore = 200;
+  private _maxTurn = 30;
   private _allTileTypes = Object.values(TileType).filter(type => !type.startsWith('special-'));
 
   public get number(): number {
@@ -65,6 +65,9 @@ export class GameLevel {
     this._shuffles = 3;
     this._score = 0;
     this._turn = 0;
+  }
+
+  public increaseDifficulty(): void {
     this._maxTurn -= 2;
   }
 

@@ -21,9 +21,14 @@ export class GameModel {
     return this._board;
   }
 
-  public async startLevel(): Promise<void> {
+  public async startLevel(increaseDifficulty: boolean): Promise<void> {
     this.level.increaseLevel();
     this.board.fill(() => this.level.generateTile());
+
+    if (increaseDifficulty) {
+      this.level.increaseDifficulty();
+    }
+
     await this.events.emit('startLevel', [this.level.number]);
   }
 

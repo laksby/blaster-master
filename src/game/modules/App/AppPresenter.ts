@@ -16,7 +16,7 @@ export class AppPresenter extends BasePresenter<IAppView, GameModel> implements 
 
   public async startNextLevel(): Promise<void> {
     this.view.hideOverlay();
-    await this.model.startLevel();
+    await this.model.startLevel(true);
   }
 
   private async clearingTiles(position: PointData, tile: TileType): Promise<void> {

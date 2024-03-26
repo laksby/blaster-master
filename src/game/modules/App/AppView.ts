@@ -75,14 +75,8 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
       brightness: 1,
       radius: -1,
       center: {
-        x:
-          this.boardView!.background.width >= this.app.screen.width
-            ? coordinates.x
-            : coordinates.x - this.boardView!.background.width / 2,
-        y:
-          this.boardView!.background.width >= this.app.screen.width
-            ? coordinates.y - this.boardView!.background.height / 2
-            : coordinates.y,
+        x: coordinates.x - this.boardView!.background.position.x,
+        y: coordinates.y - this.boardView!.background.position.y,
       },
     });
   }
