@@ -4,6 +4,7 @@ import { attachHover, getProportionalSize, getWidthFitSize } from '../../utils';
 import { IShufflePresenter } from './IShufflePresenter';
 import { IShuffleView } from './IShuffleView';
 import { ShufflePresenter } from './ShufflePresenter';
+import { sound } from '@pixi/sound';
 
 export interface ShuffleViewOptions {
   topBound: number;
@@ -27,6 +28,14 @@ export class ShuffleView extends BaseView<IShufflePresenter> implements IShuffle
 
   public updateShuffles(shuffles: number): void {
     this.content.text = shuffles > 0 ? `Shuffle - ${shuffles} remaining` : 'No more shuffles!';
+  }
+
+  public async soundShuffle(): Promise<void> {
+    await sound.play('shuffle');
+  }
+
+  public async soundShuffleError(): Promise<void> {
+    await sound.play('error');
   }
 
   private async loadButton(): Promise<void> {

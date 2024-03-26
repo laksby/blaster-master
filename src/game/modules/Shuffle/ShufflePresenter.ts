@@ -14,6 +14,12 @@ export class ShufflePresenter extends BasePresenter<IShuffleView, GameModel> imp
   }
 
   public async shuffle(): Promise<void> {
+    if (this.model.level.shuffles > 0) {
+      this.view.soundShuffle();
+    } else {
+      this.view.soundShuffleError();
+    }
+
     await this.model.shuffle();
   }
 }

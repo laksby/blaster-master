@@ -15,6 +15,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@pixi/sound": "^6.0.0",
     "fontfaceobserver": "^2.3.0",
     "gatsby": "^5.12.4",
     "gatsby-source-filesystem": "^5.12.0",

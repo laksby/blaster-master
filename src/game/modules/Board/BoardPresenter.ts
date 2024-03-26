@@ -58,6 +58,7 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
     const group: PointData[] = [];
     this.model.searchBlastCandidates(position, group);
 
+    this.view.soundBlast();
     await this.handleClearGroup(position, TileType.SpecialBlast, group);
   }
 
@@ -66,11 +67,15 @@ export class BoardPresenter extends BasePresenter<IBoardView, GameModel> impleme
     this.model.searchClearCandidates(position, tile, group);
 
     if (group.length >= this.model.board.clearThreshold) {
+      this.view.soundClear();
+
       const isBlast = group.length >= this.model.board.blastThreshold;
       const groupAdjusted = isBlast ? group.filter(item => !(item.x === position.x && item.y === position.y)) : group;
 
-      this.model.board.setTile(position, TileType.SpecialBlast);
-      this.view.setBlastTile(position);
+      if (isBlast) {
+        this.model.board.setTile(position, TileType.SpecialBlast);
+        this.view.setBlastTile(position);
+      }
 
       await this.handleClearGroup(position, tile, groupAdjusted);
     }

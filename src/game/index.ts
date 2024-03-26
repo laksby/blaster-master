@@ -3,6 +3,7 @@ import { Application, Assets } from 'pixi.js';
 import { GameModel } from './model';
 import { AppView } from './modules/App';
 import { debounce } from './utils';
+import { sound } from '@pixi/sound';
 
 export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   const app = new Application();
@@ -26,6 +27,14 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   Assets.add({ alias: 'tile-yellow', src: 'img/tile-yellow.png' });
   Assets.add({ alias: 'tile-green', src: 'img/tile-green.png' });
 
+  sound.add('intro', 'sounds/intro.mp3');
+  sound.add('clear', 'sounds/clear.mp3');
+  sound.add('blast', 'sounds/blast.mp3');
+  sound.add('shuffle', 'sounds/shuffle.mp3');
+  sound.add('level-up', 'sounds/level-up.mp3');
+  sound.add('defeat', 'sounds/defeat.mp3');
+  sound.add('error', 'sounds/error.mp3');
+
   const font = new FontFaceObserver('Super Squad');
   await font.load();
 
@@ -38,8 +47,6 @@ export async function initializeGame(canvas: HTMLCanvasElement): Promise<void> {
   });
 
   await appView.initializeView(app, app.stage, gameModel);
-
-  await gameModel.startLevel(false);
 
   const resize = debounce(() => appView.refreshView(app.stage), 300);
   window.addEventListener('resize', resize);

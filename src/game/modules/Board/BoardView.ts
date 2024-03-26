@@ -5,6 +5,7 @@ import { attachHover, getProportionalSize, getWidthFitSize } from '../../utils';
 import { BoardPresenter } from './BoardPresenter';
 import { IBoardPresenter } from './IBoardPresenter';
 import { IBoardView } from './IBoardView';
+import { sound } from '@pixi/sound';
 
 export interface BoardViewOptions {
   cols: number;
@@ -115,6 +116,14 @@ export class BoardView extends BaseView<IBoardPresenter> implements IBoardView {
       tileFrom.zIndex = 2 + this._options.rows - to.y;
       tileTo.zIndex = 2 + this._options.rows - to.y;
     }
+  }
+
+  public async soundClear(): Promise<void> {
+    await sound.play('clear', { volume: 0.25 });
+  }
+
+  public async soundBlast(): Promise<void> {
+    await sound.play('blast', { volume: 0.25 });
   }
 
   public getTileCoordinates(position: PointData): PointData {

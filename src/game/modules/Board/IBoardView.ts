@@ -8,4 +8,6 @@ export interface IBoardView extends IView {
   setBlastTile(position: PointData): Promise<void>;
   moveTile(from: PointData, to: PointData): Promise<void>;
   switchTiles(from: PointData, to: PointData): Promise<void>;
+  soundClear(): Promise<void>;
+  soundBlast(): Promise<void>;
 }

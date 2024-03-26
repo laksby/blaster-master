@@ -7,6 +7,7 @@ import { StatsView } from '../Stats';
 import { AppPresenter } from './AppPresenter';
 import { IAppPresenter } from './IAppPresenter';
 import { IAppView } from './IAppView';
+import { sound } from '@pixi/sound';
 
 export interface AppViewOptions {
   cols: number;
@@ -71,6 +72,7 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
     );
 
     await this.loadOverlay();
+    await this.presenter.start();
   }
 
   public async shockWave(position: PointData): Promise<void> {
@@ -93,6 +95,13 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
     this.overlay.visible = false;
   }
 
+  public showStart(): void {
+    this.icon.text = '💥';
+    this.primaryText.text = 'Blaster Master';
+    this.secondaryText.text = 'Welcome to Blaster Master game';
+    this.overlay.visible = true;
+  }
+
   public showVictory(level: number): void {
     this.icon.text = '🎉';
     this.primaryText.text = 'Victory!';
@@ -105,6 +114,18 @@ export class AppView extends BaseView<IAppPresenter> implements IAppView {
     this.primaryText.text = 'Defeat!';
     this.secondaryText.text = reason;
     this.overlay.visible = true;
+  }
+
+  public async soundIntro(): Promise<void> {
+    await sound.play('intro', { volume: 0.5 });
+  }
+
+  public async soundLevelUp(): Promise<void> {
+    await sound.play('level-up');
+  }
+
+  public async soundDefeat(): Promise<void> {
+    await sound.play('defeat');
   }
 
   private async loadOverlay(): Promise<void> {
